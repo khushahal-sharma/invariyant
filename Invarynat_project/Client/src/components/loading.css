@@ -1,0 +1,10 @@
+.loading-overlay{
+    display: flex;
+    flex: 0.75;
+    /* background-color: rgba(230,230,230,0.1); */
+    align-items: center;
+    vertical-align: center;
+    text-align: center;
+    justify-content: center;
+    
+}

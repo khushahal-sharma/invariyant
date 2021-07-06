@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h3 class="text-center">Add Student</h3>
+                <!-- Inserts a new record in the StudentInfo table -->
+                <form action="addStudent" method="post">
+                    <div class="form-group">
+                        <label for="txtName">Name:</label>
+                        <input class="form-control" placeholder="Enter name" id="txtName" name="txtName">
+                    </div>
+                    <div class="form-group">
+                        <label for="txtAge">Age:</label>
+                        <input type="number" class="form-control" placeholder="Enter age" id="txtAge" name="txtAge">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <h3 class="text-center">Student List</h3>
+                <table class="table table-bordered">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Display list of records from the StudentInfo table -->
+                        <% for (const i in studentList) { %>
+                        <tr>
+                            <td><%= studentList[i].ID %></td>
+                            <td><%= studentList[i].Name %></td>
+                            <td><%= studentList[i].Age %></td>
+                            <td width="200px">
+                                <a href="deleteStudent/<%= studentList[i].ID %>">Delete</a>
+                                &emsp; | &emsp;
+                                <a onclick="editStudent(<%= studentList[i].ID %>)" href="javascript:void(0)" data-toggle="modal" data-target="#editModal">Edit</a>
+                            </td>
+                        </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+                <!-- Edit Student Modal -->
+                <div class="modal fade" id="editModal">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <!-- Modal Header -->
+                            <div class="modal-header">
+                                <h4 class="modal-title">Edit Student</h4>
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            </div>
+                            <form action="updateStudent" method="post">
+                                <!-- Modal body -->
+                                <div class="modal-body">
+                                    <input type="hidden" id="txtID" name="txtID">
+                                    <div class="form-group">
+                                        <label for="txtEName">Name:</label>
+                                        <input class="form-control" placeholder="Enter name" id="txtEName" name="txtEName">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="txtEAge">Age:</label>
+                                        <input type="number" class="form-control" placeholder="Enter age" id="txtEAge" name="txtEAge">
+                                    </div>
+                                </div>
+                                <!-- Modal footer -->
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary">Update</button>
+                                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function editStudent(id) {
+            // AJAX call to select a record in the editable modal popup
+            $.ajax({
+                url: 'editStudent/' + id,
+                type: 'GET',
+                success: function (res) {
+                    $("#txtID").val(res.ID);
+                    $("#txtEName").val(res.Name);
+                    $("#txtEAge").val(res.Age);
+                },
+                error: function (err) {
+                    alert(err);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
