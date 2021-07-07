@@ -2,19 +2,23 @@ export const COLUMNS = {
     getPersonData : [
         {
             Header:'Id',
-            accessor:'PERSON_ID',
+            accessor:'id',
         },
         {
-            Header:'Race',
-            accessor:'RACE',
+            Header:'First Name',
+            accessor:'first_name',
         },
         {
-            Header:'ETHNCITY',
-            accessor:'ETHNCITY',
+            Header:'Last Name',
+            accessor:'last_name',
+        },
+        {
+            Header:'Gender',
+            accessor:'gender',
         },
         {
             Header:'Age',
-            accessor:'CURRENT_AGE',
+            accessor:'age',
         },
     {
         Header:'Language',

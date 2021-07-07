@@ -8,37 +8,37 @@ import ReactHtmlTableToExcel from "react-html-table-to-excel";
 import Loading from './Loading';
 
 const Table = ({selectedMenu}) => {
-  const [tableState, setTableState] = useState({});
+  // const [tableState, setTableState] = useState({});
   const [ loading, setLoading] = useState(false);
 
   let columns = [],
     data = [];
-  useEffect(() => {
-    const url = `http://127.0.0.1:7000/${
-      selectedMenu || "getPersonData"
-    }`;
+  // useEffect(() => {
+  //   const url = `http://127.0.0.1:7000/${
+  //     selectedMenu || "getPersonData"
+  //   }`;
 
-    const fetchData = async () => {
-      try {
-        // setLoading(true)
-        const response = await fetch(url);
-        const updatedData = await response.json();
-        // if(updatedData) setLoading(false)
-        console.log(" updated data ", updatedData);
+  //   const fetchData = async () => {
+  //     try {
+  //       // setLoading(true)
+  //       const response = await fetch(url);
+  //       const updatedData = await response.json();
+  //       // if(updatedData) setLoading(false)
+  //       console.log(" updated data ", updatedData);
         
-      } catch (error) {
-        console.log("error", error);
-        if(error){
-          return (
-            <h2>Somthing went wrong.Try reloading</h2>
-          )
-        }
-        // error message show to state.
-      }
-    };
+  //     } catch (error) {
+  //       console.log("error", error);
+  //       if(error){
+  //         return (
+  //           <h2>Somthing went wrong.Try reloading</h2>
+  //         )
+  //       }
+  //       // error message show to state.
+  //     }
+  //   };
 
-    fetchData();
-  }, []);
+  //   fetchData();
+  // }, []);
 
   columns = useMemo(() => COLUMNS[selectedMenu], []);
   data = useMemo(() => MOCK_DATA, []);
@@ -101,6 +101,7 @@ const Table = ({selectedMenu}) => {
               );
             })}
           </tbody>
+        </table>
           <div className="table-footer">
             <span>
               Page{" "}
@@ -108,29 +109,32 @@ const Table = ({selectedMenu}) => {
                 {pageIndex + 1} of {pageOptions.length}
               </strong>
             </span>
-            <div>
+            <div className='footer-buttons'>
               <button
+                className='button'
                 disabled={!canPreviousPage}
                 onClick={() => previousPage()}
               >
                 Pre
               </button>
-              <button disabled={!canNextPage} onClick={() => nextPage()}>
+              <button
+                className='button'
+               disabled={!canNextPage} 
+               onClick={() => nextPage()}>
                 Next
               </button>
             </div>
-          </div>
-        </table>
-        <div>
-          <ReactHtmlTableToExcel
-            id="test-table-xls-button"
-            className="download-table-xls-button"
-            table="table-to-xls"
-            filename="tablexls"
-            sheet="tablexls"
-            buttonText="Export as xls"
-          />
-        </div>
+            <div>
+              <ReactHtmlTableToExcel
+                id="test-table-xls-button"
+                className="export-button"
+                table="table-to-xls"
+                filename="tablexls"
+                sheet="tablexls"
+                buttonText="Export as xls"
+                />
+            </div>
+            </div>
       </>}
     </div>
   );

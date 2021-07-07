@@ -1,18 +1,23 @@
 .list{
-    flex: 0.25
+    flex: 0.20;
+    border-right: 1px solid;
 }
 
 ol{
-    list-style: none
+    list-style: none;
+    padding: 0;
 }
 
 li{
     padding: 5px;
     margin: 5px;
-    cursor: pointer
+    cursor: pointer;
+    border-bottom: 1px solid #ccc
 }
-li:hover{
-    color: red
+.selected{
+    background-color: #04AA6D;
+    border-radius: 5px;
+    font-size: large
 }
 li > a{
     text-decoration: none;
