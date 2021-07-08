@@ -1,7 +1,7 @@
 exports.dbConnection = function () {
   const config = {
     client: "mssql",
-    server: "RITU-PC",
+    server: "DESKTOP-41TRNV1",
     database: "test",
     authentication: {
       type: "default",

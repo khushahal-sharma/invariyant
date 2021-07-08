@@ -74,6 +74,10 @@ router.get("/getPersonData", async function (req, res) {
     let visitResult = await sql.query(
       `SELECT * FROM Visits Where PERSON_ID IN (${personIdValues})`
     );
+    let DiagnosesResult = await sql.query(
+      `SELECT * FROM Diagnoses Where PERSON_ID IN (${personIdValues})`
+    );
+    // console.log("diagnoses",DiagnosesResult);
 
     //preapare Visit map with details.
     let visitIDMap = {};
@@ -82,7 +86,39 @@ router.get("/getPersonData", async function (req, res) {
         ...item,
       };
     });
+    
+    (DiagnosesResult.recordset || []).forEach((item)=>{
+      const { VALUE, PERSON_ID, VISIT_ID } = item;
+      if(uniquePersonIllnes[PERSON_ID]){
+        !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] &&
+            (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
+        if( VALUE === "O99.419"){
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["History_of_cardiovascular_disease"] = "Yes"
+        }
+        if( VALUE === "R09.02"){
+          // (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Swelling_in_face_or_hands"] = "Yes"
+        }
+        if( VALUE === "R06.02"){
+          // (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Shortness_of_breath_at_rest"] = "Yes"
+        }
+        if( VALUE === "R06.01"){
+          // (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Severe_orthopnea"] = "Yes"
+        }
+        if( VALUE === "R06.00"){
+          // (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Dyspnea"] = "Yes"
+        }
+      }
+      
+      
+    }
+    );
+    // console.log("details",uniquePersonIllnes);
 
+    // console.log("main object",uniquePersonIllnes);
     (EventResult.recordset || []).forEach((item) => {
       const { EVNET_ID, PERSON_ID, VISIT_ID, EVENT_CD, RESULT_VAL } = item;
       if (uniquePersonIllnes[PERSON_ID]) {
@@ -105,15 +141,14 @@ router.get("/getPersonData", async function (req, res) {
         }
       }
     });
-
     //Prepare final result array from uniquePersonIllnes Object.
     const preparedResult = [];
     for (let PersonID in uniquePersonIllnes) {
       const personDetails = uniquePersonIllnes[PersonID];
 
+      // console.log("persondetails",personDetails);
       for (let visitId in personDetails["VISITS"]) {
         const visitDetail = personDetails["VISITS"][visitId];
-
         preparedResult.push({
           PERSON_ID: personDetails.PERSON_ID,
           VISIT_ID: visitId,
@@ -127,9 +162,15 @@ router.get("/getPersonData", async function (req, res) {
 
           Resting_Systolic_BP: visitDetail.Resting_Systolic_BP || "NA",
           Resting_Diastolic_BP: visitDetail.Resting_Diastolic_BP || "NA",
+          History_of_cardiovascular_disease: visitDetail.History_of_cardiovascular_disease || "NA",
+          Swelling_in_face_or_hands: visitDetail.Swelling_in_face_or_hands || "NA",
+          Shortness_of_breath_at_rest: visitDetail.Shortness_of_breath_at_rest || "NA",
+          Severe_orthopnea:visitDetail.Severe_orthopnea || "NA",
+          Dyspnea: visitDetail.Dyspnea || "NA"
         });
       }
     }
+
 
     res.json({ data: preparedResult });
   } catch (err) {
