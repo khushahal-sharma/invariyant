@@ -88,7 +88,7 @@ router.get("/getPersonData", async function (req, res) {
     });
     
     (DiagnosesResult.recordset || []).forEach((item)=>{
-      const { VALUE, PERSON_ID, VISIT_ID } = item;
+      const { VALUE, PERSON_ID, VISIT_ID, EVENT_DESC } = item;
       if(uniquePersonIllnes[PERSON_ID]){
         !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] &&
             (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
@@ -96,20 +96,34 @@ router.get("/getPersonData", async function (req, res) {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["History_of_cardiovascular_disease"] = "Yes"
         }
         if( VALUE === "R09.02"){
-          // (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Swelling_in_face_or_hands"] = "Yes"
         }
         if( VALUE === "R06.02"){
-          // (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Shortness_of_breath_at_rest"] = "Yes"
         }
-        if( VALUE === "R06.01"){
-          // (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
+        if( VALUE === "R06.01" && EVENT_DESC === "Severe orthopnea"){
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Severe_orthopnea"] = "Yes"
         }
         if( VALUE === "R06.00"){
-          // (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Dyspnea"] = "Yes"
+        }
+        if( VALUE === "R06.01" && EVENT_DESC === "Mild orthopnea"){
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Mild_orthopnea"] = "Yes"
+        }
+        if( VALUE === "R06.82"){
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Tachypnea"] = "Yes"
+        }
+        if( VALUE === "R51"){
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["New_or_worsening_headache"] = "Yes"
+        }
+        if( VALUE === "R07.9"){
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Chest_pain"] = "Yes"
+        }
+        if( VALUE === "R42 or R55"){
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Dizziness_or_syncope"] = "Yes"
+        }
+        if( VALUE === "R00.2"){
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Palpitations"] = "Yes"
         }
       }
       
@@ -139,6 +153,11 @@ router.get("/getPersonData", async function (req, res) {
             "Resting_Diastolic_BP"
           ] = RESULT_VAL <= 60 ? "Yes" : "No";
         }
+        if (EVENT_CD == "R09.02") {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
+            "Oxygen_saturation"
+          ] = RESULT_VAL <= 94 ? "Yes" : "No";
+        }
       }
     });
     //Prepare final result array from uniquePersonIllnes Object.
@@ -146,7 +165,7 @@ router.get("/getPersonData", async function (req, res) {
     for (let PersonID in uniquePersonIllnes) {
       const personDetails = uniquePersonIllnes[PersonID];
 
-      // console.log("persondetails",personDetails);
+      console.log("persondetails",personDetails);
       for (let visitId in personDetails["VISITS"]) {
         const visitDetail = personDetails["VISITS"][visitId];
         preparedResult.push({
@@ -166,7 +185,14 @@ router.get("/getPersonData", async function (req, res) {
           Swelling_in_face_or_hands: visitDetail.Swelling_in_face_or_hands || "NA",
           Shortness_of_breath_at_rest: visitDetail.Shortness_of_breath_at_rest || "NA",
           Severe_orthopnea:visitDetail.Severe_orthopnea || "NA",
-          Dyspnea: visitDetail.Dyspnea || "NA"
+          Dyspnea: visitDetail.Dyspnea || "NA",
+          Mild_orthopnea:visitDetail.Mild_orthopnea || "NA",
+          Tachypnea:visitDetail.Tachypnea || "NA",
+          New_or_worsening_headache:visitDetail.New_or_worsening_headache || "NA",
+          Palpitations: visitDetail.Palpitations || "NA",
+          Dizziness_or_syncope: visitDetail.Dizziness_or_syncope || "NA",
+          Chest_pain:visitDetail.Chest_pain || "NA",
+          Oxygen_saturation:visitDetail.Oxygen_saturation || "NA"
         });
       }
     }
