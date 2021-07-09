@@ -82,7 +82,6 @@ router.get("/getPersonData", async function (req, res) {
     let DiagnosesResult = await sql.query(
       `SELECT * FROM Diagnoses Where PERSON_ID IN (${personIdValues})`
     );
-    // console.log("diagnoses",DiagnosesResult);
 
     //preapare Visit map with details.
     let visitIDMap = {};
@@ -196,18 +195,17 @@ router.get("/getPersonData", async function (req, res) {
             "RiskFactor"
           ] += 1;
         }
-        if (VALUE.includes('i10')) {
+        if (VALUE.includes("i10")) {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "Pre_pregnancy_diagnosis_of_hypertension"] = "Yes";
+            "Pre_pregnancy_diagnosis_of_hypertension"
+          ] = "Yes";
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
             "RiskFactor"
           ] += 1;
         }
       }
     });
-    // console.log("details",uniquePersonIllnes);
 
-    // console.log("main object",uniquePersonIllnes);
     (EventResult.recordset || []).forEach((item) => {
       const {
         EVNET_ID,
@@ -223,6 +221,15 @@ router.get("/getPersonData", async function (req, res) {
           (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
         // !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] &&
         // (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] = 0)
+
+        // defesive check for risk factors
+        !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] &&
+          (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] = {
+            Symptoms: 0,
+            Vitals_sign: 0,
+            Physical_exam: 0,
+            RiskFactor: 0,
+          });
 
         //Add Systolic BP details to Person widget.
         if (EVENT_CD == 102225120) {
@@ -300,9 +307,8 @@ router.get("/getPersonData", async function (req, res) {
       const personDetails = uniquePersonIllnes[PersonID];
 
       for (let visitId in personDetails["VISITS"]) {
-        // console.log("persondetails",personDetails["VISITS"][visitId]["Risk_Factor"]);
         const visitDetail = personDetails["VISITS"][visitId];
-        console.log(visitDetail);
+
         const result = {
           PERSON_ID: personDetails.PERSON_ID,
           VISIT_ID: visitId,
@@ -321,7 +327,7 @@ router.get("/getPersonData", async function (req, res) {
           Resting_Systolic_BP: visitDetail.Resting_Systolic_BP || "NA",
           Oxygen_saturation: visitDetail.Oxygen_saturation || "NA",
           Respiratory_rate: visitDetail.Respiratory_rate || "NA",
-          RACE:personDetails.RACE,
+          RACE: personDetails.RACE,
           Age: personDetails.CURRENT_AGE,
           Swelling_in_face_or_hands:
             visitDetail.Swelling_in_face_or_hands || "NA",
@@ -334,16 +340,18 @@ router.get("/getPersonData", async function (req, res) {
           Palpitations: visitDetail.Palpitations || "NA",
           Dizziness_or_syncope: visitDetail.Dizziness_or_syncope || "NA",
           Chest_pain: visitDetail.Chest_pain || "NA",
-          Loud_murmur_heart:visitDetail.Loud_murmur_heart || "NA",
-          Pre_pregnancy_diagnosis_of_diabetes:visitDetail.Pre_pregnancy_diagnosis_of_diabetes || "NA",
-          Pre_pregnancy_diagnosis_of_hypertension: visitDetail.Pre_pregnancy_diagnosis_of_hypertension || "NA"
+          Loud_murmur_heart: visitDetail.Loud_murmur_heart || "NA",
+          Pre_pregnancy_diagnosis_of_diabetes:
+            visitDetail.Pre_pregnancy_diagnosis_of_diabetes || "NA",
+          Pre_pregnancy_diagnosis_of_hypertension:
+            visitDetail.Pre_pregnancy_diagnosis_of_hypertension || "NA",
         };
 
-        if(personDetails.CURRENT_AGE >= 40){
-          visitDetail.Risk_Factor.RiskFactor += 1
+        if (personDetails.CURRENT_AGE >= 40) {
+          visitDetail.Risk_Factor.RiskFactor += 1;
         }
-        if(personDetails.RACE == "African American"){
-          visitDetail.Risk_Factor.RiskFactor += 1
+        if (personDetails.RACE == "African American") {
+          visitDetail.Risk_Factor.RiskFactor += 1;
         }
         //  calculating risk category and risk factor count
 
