@@ -182,7 +182,7 @@ router.get("/getPersonData", async function (req, res) {
         }
         if (VALUE == "R01.1") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "Loud_murmur(heart)"
+            "Loud_murmur_heart"
           ] = "Yes";
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
             "Physical_exam"
@@ -261,7 +261,7 @@ router.get("/getPersonData", async function (req, res) {
             // uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] += 1;
           }
         }
-        if (EVENT_CD == 9989898654) {
+        if (EVENT_DESC == "heart rate") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Resting_HR"] =
             RESULT_VAL;
           if (RESULT_VAL >= 120) {
@@ -276,7 +276,7 @@ router.get("/getPersonData", async function (req, res) {
             // uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] += 1;
           }
         }
-        if (EVENT_DESC == "heart rate") {
+        if (EVENT_DESC == "Respiratory rate") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
             "Respiratory_rate"
           ] = RESULT_VAL;
@@ -320,6 +320,7 @@ router.get("/getPersonData", async function (req, res) {
           Resting_HR: visitDetail.Resting_HR || "NA",
           Resting_Systolic_BP: visitDetail.Resting_Systolic_BP || "NA",
           Oxygen_saturation: visitDetail.Oxygen_saturation || "NA",
+          Respiratory_rate: visitDetail.Respiratory_rate || "NA",
           RACE:personDetails.RACE,
           Age: personDetails.CURRENT_AGE,
           Swelling_in_face_or_hands:
@@ -333,6 +334,7 @@ router.get("/getPersonData", async function (req, res) {
           Palpitations: visitDetail.Palpitations || "NA",
           Dizziness_or_syncope: visitDetail.Dizziness_or_syncope || "NA",
           Chest_pain: visitDetail.Chest_pain || "NA",
+          Loud_murmur_heart:visitDetail.Loud_murmur_heart || "NA",
           Pre_pregnancy_diagnosis_of_diabetes:visitDetail.Pre_pregnancy_diagnosis_of_diabetes || "NA",
           Pre_pregnancy_diagnosis_of_hypertension: visitDetail.Pre_pregnancy_diagnosis_of_hypertension || "NA"
         };
