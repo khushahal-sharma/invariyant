@@ -96,112 +96,72 @@ router.get("/getPersonData", async function (req, res) {
       if (uniquePersonIllnes[PERSON_ID]) {
         !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] &&
           (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
-        !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] &&
-          (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] = {
+
+        //use refrential variable
+        let visit = uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID];
+        !visit["Risk_Factor"] &&
+          (visit["Risk_Factor"] = {
             Symptoms: 0,
             Vitals_sign: 0,
             Physical_exam: 0,
             RiskFactor: 0,
           });
+
         if (VALUE == "O99.419") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "History_of_cardiovascular_disease"
-          ] = "Yes";
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] = "RED";
+          visit["History_of_cardiovascular_disease"] = "Yes";
+          visit["Risk_Cat"] = "RED";
         }
         if (VALUE == "R09.02") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "Swelling_in_face_or_hands"
-          ] = "Yes";
+          visit["Swelling_in_face_or_hands"] = "Yes";
         }
         if (VALUE == "R06.02") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "Shortness_of_breath_at_rest"
-          ] = "Yes";
+          visit["Shortness_of_breath_at_rest"] = "Yes";
         }
         if (VALUE == "R06.01" && EVENT_DESC == "Severe orthopnea") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "Severe_orthopnea"
-          ] = "Yes";
+          visit["Severe_orthopnea"] = "Yes";
         }
         if (VALUE == "R06.00") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Dyspnea"] = "Yes";
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
-            "Symptoms"
-          ] += 1;
+          visit["Dyspnea"] = "Yes";
+          visit["Risk_Factor"]["Symptoms"] += 1;
         }
         if (VALUE == "R06.01" && EVENT_DESC == "Mild orthopnea") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Mild_orthopnea"] =
-            "Yes";
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
-            "Symptoms"
-          ] += 1;
+          visit["Mild_orthopnea"] = "Yes";
+          visit["Risk_Factor"]["Symptoms"] += 1;
         }
         if (VALUE == "R06.82") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Tachypnea"] =
-            "Yes";
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
-            "Symptoms"
-          ] += 1;
+          visit["Tachypnea"] = "Yes";
+          visit["Risk_Factor"]["Symptoms"] += 1;
         }
         if (VALUE == "R51") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "New_or_worsening_headache"
-          ] = "Yes";
+          visit["New_or_worsening_headache"] = "Yes";
         }
         if (VALUE == "J45") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "Asthma_unresponsive "
-          ] = "Yes";
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
-            "Symptoms"
-          ] += 1;
+          visit["Asthma_unresponsive "] = "Yes";
+          visit["Risk_Factor"]["Symptoms"] += 1;
         }
         if (VALUE == "R07.9") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Chest_pain"] =
-            "Yes";
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
-            "Symptoms"
-          ] += 1;
+          visit["Chest_pain"] = "Yes";
+          visit["Risk_Factor"]["Symptoms"] += 1;
         }
         if (VALUE == "R42 or R55") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "Dizziness_or_syncope"
-          ] = "Yes";
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
-            "Symptoms"
-          ] += 1;
+          visit["Dizziness_or_syncope"] = "Yes";
+          visit["Risk_Factor"]["Symptoms"] += 1;
         }
         if (VALUE == "R00.2") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Palpitations"] =
-            "Yes";
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
-            "Symptoms"
-          ] += 1;
+          visit["Palpitations"] = "Yes";
+          visit["Risk_Factor"]["Symptoms"] += 1;
         }
         if (VALUE == "R01.1") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "Loud_murmur_heart"
-          ] = "Yes";
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
-            "Physical_exam"
-          ] += 1;
+          visit["Loud_murmur_heart"] = "Yes";
+          visit["Risk_Factor"]["Physical_exam"] += 1;
         }
         if (VALUE == "E10" || VALUE == "E11") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "Pre_pregnancy_diagnosis_of_diabetes"
-          ] = "Yes";
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
-            "RiskFactor"
-          ] += 1;
+          visit["Pre_pregnancy_diagnosis_of_diabetes"] = "Yes";
+          visit["Risk_Factor"]["RiskFactor"] += 1;
         }
         if (VALUE.includes("i10")) {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "Pre_pregnancy_diagnosis_of_hypertension"
-          ] = "Yes";
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
-            "RiskFactor"
-          ] += 1;
+          visit["Pre_pregnancy_diagnosis_of_hypertension"] = "Yes";
+          visit["Risk_Factor"]["RiskFactor"] += 1;
         }
       }
     });
