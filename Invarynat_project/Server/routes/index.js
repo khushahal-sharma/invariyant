@@ -362,7 +362,7 @@ router.get("/getPersonData", async function (req, res) {
           if (visitDetail.Risk_Cat !== "RED") {
             result.Risk_Cat =
               (Symptoms > 1 && Vitals_sign > 1 && RiskFactor > 1) ||
-              (totalRisk > 4 && "RED") ||
+              (totalRisk >= 4 && "RED") ||
               "NA";
           }
         }
