@@ -100,7 +100,9 @@ router.get("/getPersonData", async function (req, res) {
             !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] && 
             (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] = { Symptoms: 0,
         Vitals_sign : 0,
-        Physical_exam : 0})
+        Physical_exam : 0,
+        RiskFactor : 0
+      })
         if( VALUE === "O99.419"){
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["History_of_cardiovascular_disease"] = "Yes";
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] = "RED";
@@ -246,7 +248,8 @@ router.get("/getPersonData", async function (req, res) {
       for (let visitId in personDetails["VISITS"]) {
         // console.log("persondetails",personDetails["VISITS"][visitId]["Risk_Factor"]);
         const visitDetail = personDetails["VISITS"][visitId];
-        preparedResult.push({
+        console.log(visitDetail);
+        const result = {
           PERSON_ID: personDetails.PERSON_ID,
           VISIT_ID: visitId,
           VISIT_NUMBER: (visitIDMap[visitId] || {}).VISIT_NUMBER || "",
@@ -254,7 +257,7 @@ router.get("/getPersonData", async function (req, res) {
           REG_DAYS_FROM_INDEX:
             (visitIDMap[visitId] || {}).REG_DAYS_FROM_INDEX || "",
           Risk_Cat:visitDetail.Risk_Cat || "NA",
-          Risk_Factor:visitDetail.Risk_Factor || "NA",
+          Risk_Factor: 0 ,
           History_of_cardiovascular_disease: visitDetail.History_of_cardiovascular_disease || "NA",
           Shortness_of_breath_at_rest: visitDetail.Shortness_of_breath_at_rest || "NA",
           Severe_orthopnea:visitDetail.Severe_orthopnea || "NA",
@@ -272,23 +275,23 @@ router.get("/getPersonData", async function (req, res) {
           Palpitations: visitDetail.Palpitations || "NA",
           Dizziness_or_syncope: visitDetail.Dizziness_or_syncope || "NA",
           Chest_pain:visitDetail.Chest_pain || "NA",
-        });
+        }
+
+        //  calculating risk category and risk factor count
+
+        if(visitDetail.Risk_Factor){
+          const {Symptoms, Vitals_sign, RiskFactor} = visitDetail.Risk_Factor
+          let totalRisk = Symptoms + RiskFactor + Vitals_sign;
+          result.Risk_Factor = totalRisk || "NA"
+          if(visitDetail.Risk_Cat !== "RED"){
+            result.Risk_Cat  = (Symptoms > 1 && Vitals_sign > 1 && RiskFactor >1 ) || (totalRisk > 4 && "RED")  || "NA"
+  
+          }
+        }
+
+        preparedResult.push(result);
       }
     }
-    
-    // let value= 0 ;
-    // let count = []
-    // preparedResult.map((item)=>{
-    //   for(let x in item){
-    //     if(item[x] === "Yes"){
-    //       value += 1;
-    //     }
-    //   }
-    //   count.push(value)
-    //   value = 0;
-    // })
-
-// console.log(preparedResult);
     
 
     res.json({ data: preparedResult });
