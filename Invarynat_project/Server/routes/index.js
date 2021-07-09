@@ -104,48 +104,48 @@ router.get("/getPersonData", async function (req, res) {
             Physical_exam: 0,
             RiskFactor: 0,
           });
-        if (VALUE === "O99.419") {
+        if (VALUE == "O99.419") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
             "History_of_cardiovascular_disease"
           ] = "Yes";
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] = "RED";
         }
-        if (VALUE === "R09.02") {
+        if (VALUE == "R09.02") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
             "Swelling_in_face_or_hands"
           ] = "Yes";
         }
-        if (VALUE === "R06.02") {
+        if (VALUE == "R06.02") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
             "Shortness_of_breath_at_rest"
           ] = "Yes";
         }
-        if (VALUE === "R06.01" && EVENT_DESC === "Severe orthopnea") {
+        if (VALUE == "R06.01" && EVENT_DESC == "Severe orthopnea") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
             "Severe_orthopnea"
           ] = "Yes";
         }
-        if (VALUE === "R06.00") {
+        if (VALUE == "R06.00") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Dyspnea"] = "Yes";
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
             "Symptoms"
           ] += 1;
         }
-        if (VALUE === "R06.01" && EVENT_DESC === "Mild orthopnea") {
+        if (VALUE == "R06.01" && EVENT_DESC == "Mild orthopnea") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Mild_orthopnea"] =
             "Yes";
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
             "Symptoms"
           ] += 1;
         }
-        if (VALUE === "R06.82") {
+        if (VALUE == "R06.82") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Tachypnea"] =
             "Yes";
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
             "Symptoms"
           ] += 1;
         }
-        if (VALUE === "R51") {
+        if (VALUE == "R51") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
             "New_or_worsening_headache"
           ] = "Yes";
@@ -158,14 +158,14 @@ router.get("/getPersonData", async function (req, res) {
             "Symptoms"
           ] += 1;
         }
-        if (VALUE === "R07.9") {
+        if (VALUE == "R07.9") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Chest_pain"] =
             "Yes";
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
             "Symptoms"
           ] += 1;
         }
-        if (VALUE === "R42 or R55") {
+        if (VALUE == "R42 or R55") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
             "Dizziness_or_syncope"
           ] = "Yes";
@@ -173,14 +173,14 @@ router.get("/getPersonData", async function (req, res) {
             "Symptoms"
           ] += 1;
         }
-        if (VALUE === "R00.2") {
+        if (VALUE == "R00.2") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Palpitations"] =
             "Yes";
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
             "Symptoms"
           ] += 1;
         }
-        if (VALUE === "R01.1") {
+        if (VALUE == "R01.1") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
             "Loud_murmur(heart)"
           ] = "Yes";
@@ -190,10 +190,17 @@ router.get("/getPersonData", async function (req, res) {
         }
         if (VALUE == "E10" || VALUE == "E11") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "Pre-pregnancy_diagnosis_of_diabetes"
+            "Pre_pregnancy_diagnosis_of_diabetes"
           ] = "Yes";
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
-            "Physical_exam"
+            "RiskFactor"
+          ] += 1;
+        }
+        if (VALUE.includes('i10')) {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
+            "Pre_pregnancy_diagnosis_of_hypertension"] = "Yes";
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
+            "RiskFactor"
           ] += 1;
         }
       }
@@ -300,9 +307,9 @@ router.get("/getPersonData", async function (req, res) {
           PERSON_ID: personDetails.PERSON_ID,
           VISIT_ID: visitId,
           VISIT_NUMBER: (visitIDMap[visitId] || {}).VISIT_NUMBER || "",
-          VISIT_TYPE: (visitIDMap[visitId] || {}).VISIT_TYPE || "",
-          REG_DAYS_FROM_INDEX:
-            (visitIDMap[visitId] || {}).REG_DAYS_FROM_INDEX || "",
+          // VISIT_TYPE: (visitIDMap[visitId] || {}).VISIT_TYPE || "",
+          // REG_DAYS_FROM_INDEX:
+          //   (visitIDMap[visitId] || {}).REG_DAYS_FROM_INDEX || "",
           Risk_Cat: visitDetail.Risk_Cat || "NA",
           Risk_Factor: 0,
           History_of_cardiovascular_disease:
@@ -313,9 +320,8 @@ router.get("/getPersonData", async function (req, res) {
           Resting_HR: visitDetail.Resting_HR || "NA",
           Resting_Systolic_BP: visitDetail.Resting_Systolic_BP || "NA",
           Oxygen_saturation: visitDetail.Oxygen_saturation || "NA",
-          isAfricanAmerican:
-            personDetails.RACE === "African American" ? "Yes" : "No",
-          isAgeMoreThan40: personDetails.CURRENT_AGE >= 40 ? "Yes" : "No",
+          RACE:personDetails.RACE,
+          Age: personDetails.CURRENT_AGE,
           Swelling_in_face_or_hands:
             visitDetail.Swelling_in_face_or_hands || "NA",
           Dyspnea: visitDetail.Dyspnea || "NA",
@@ -327,8 +333,16 @@ router.get("/getPersonData", async function (req, res) {
           Palpitations: visitDetail.Palpitations || "NA",
           Dizziness_or_syncope: visitDetail.Dizziness_or_syncope || "NA",
           Chest_pain: visitDetail.Chest_pain || "NA",
+          Pre_pregnancy_diagnosis_of_diabetes:visitDetail.Pre_pregnancy_diagnosis_of_diabetes || "NA",
+          Pre_pregnancy_diagnosis_of_hypertension: visitDetail.Pre_pregnancy_diagnosis_of_hypertension || "NA"
         };
 
+        if(personDetails.CURRENT_AGE >= 40){
+          visitDetail.Risk_Factor.RiskFactor += 1
+        }
+        if(personDetails.RACE == "African American"){
+          visitDetail.Risk_Factor.RiskFactor += 1
+        }
         //  calculating risk category and risk factor count
 
         if (visitDetail.Risk_Factor) {
