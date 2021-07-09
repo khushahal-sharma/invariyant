@@ -49,11 +49,11 @@ router.get("/getPersonData", async function (req, res) {
     let result = await sql.query("SELECT Top 100 * FROM Person"),
       uniquePersonIllnes = {},
       personIdValues = "";
-      // Risk_Factor = {
-      //   Symptoms: 0,
-      //   Vitals_sign : 0,
-      //   Physical_exam : 0
-      // };
+    // Risk_Factor = {
+    //   Symptoms: 0,
+    //   Vitals_sign : 0,
+    //   Physical_exam : 0
+    // };
 
     // find unique persion id.
     (result.recordset || []).forEach(
@@ -91,107 +91,146 @@ router.get("/getPersonData", async function (req, res) {
         ...item,
       };
     });
-    
-    (DiagnosesResult.recordset || []).forEach((item)=>{
+
+    (DiagnosesResult.recordset || []).forEach((item) => {
       const { VALUE, PERSON_ID, VISIT_ID, EVENT_DESC } = item;
-      if(uniquePersonIllnes[PERSON_ID]){
+      if (uniquePersonIllnes[PERSON_ID]) {
         !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] &&
-            (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
-            !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] && 
-            (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] = { Symptoms: 0,
-        Vitals_sign : 0,
-        Physical_exam : 0,
-        RiskFactor : 0
-      })
-        if( VALUE === "O99.419"){
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["History_of_cardiovascular_disease"] = "Yes";
+          (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
+        !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] &&
+          (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] = {
+            Symptoms: 0,
+            Vitals_sign: 0,
+            Physical_exam: 0,
+            RiskFactor: 0,
+          });
+        if (VALUE === "O99.419") {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
+            "History_of_cardiovascular_disease"
+          ] = "Yes";
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] = "RED";
-          
         }
-        if( VALUE === "R09.02"){
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Swelling_in_face_or_hands"] = "Yes"
+        if (VALUE === "R09.02") {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
+            "Swelling_in_face_or_hands"
+          ] = "Yes";
         }
-        if( VALUE === "R06.02"){
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Shortness_of_breath_at_rest"] = "Yes"
-          
+        if (VALUE === "R06.02") {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
+            "Shortness_of_breath_at_rest"
+          ] = "Yes";
         }
-        if( VALUE === "R06.01" && EVENT_DESC === "Severe orthopnea"){
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Severe_orthopnea"] = "Yes"
+        if (VALUE === "R06.01" && EVENT_DESC === "Severe orthopnea") {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
+            "Severe_orthopnea"
+          ] = "Yes";
         }
-        if( VALUE === "R06.00"){
+        if (VALUE === "R06.00") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Dyspnea"] = "Yes";
-          (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"]["Symptoms"] += 1)
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
+            "Symptoms"
+          ] += 1;
         }
-        if( VALUE === "R06.01" && EVENT_DESC === "Mild orthopnea"){
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Mild_orthopnea"] = "Yes";
-          (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"]["Symptoms"] += 1)
+        if (VALUE === "R06.01" && EVENT_DESC === "Mild orthopnea") {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Mild_orthopnea"] =
+            "Yes";
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
+            "Symptoms"
+          ] += 1;
         }
-        if( VALUE === "R06.82"){
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Tachypnea"] = "Yes";
-          (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"]["Symptoms"] += 1)
-
+        if (VALUE === "R06.82") {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Tachypnea"] =
+            "Yes";
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
+            "Symptoms"
+          ] += 1;
         }
-        if( VALUE === "R51"){
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["New_or_worsening_headache"] = "Yes"
+        if (VALUE === "R51") {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
+            "New_or_worsening_headache"
+          ] = "Yes";
         }
-        if( VALUE == "J45" ){
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Asthma_unresponsive "] = "Yes";
-          (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"]["Symptoms"] += 1)
-
+        if (VALUE == "J45") {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
+            "Asthma_unresponsive "
+          ] = "Yes";
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
+            "Symptoms"
+          ] += 1;
         }
-        if( VALUE === "R07.9"){
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Chest_pain"] = "Yes";
-          (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"]["Symptoms"] += 1)
-
+        if (VALUE === "R07.9") {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Chest_pain"] =
+            "Yes";
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
+            "Symptoms"
+          ] += 1;
         }
-        if( VALUE === "R42 or R55"){
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Dizziness_or_syncope"] = "Yes";
-          (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"]["Symptoms"] += 1)
-
+        if (VALUE === "R42 or R55") {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
+            "Dizziness_or_syncope"
+          ] = "Yes";
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
+            "Symptoms"
+          ] += 1;
         }
-        if( VALUE === "R00.2"){
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Palpitations"] = "Yes";
-          (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"]["Symptoms"] += 1)
-
+        if (VALUE === "R00.2") {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Palpitations"] =
+            "Yes";
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
+            "Symptoms"
+          ] += 1;
         }
-        if( VALUE === "R01.1"){
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Loud_murmur(heart)"] = "Yes";
-          (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"]["Physical_exam"] += 1)
-
+        if (VALUE === "R01.1") {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
+            "Loud_murmur(heart)"
+          ] = "Yes";
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
+            "Physical_exam"
+          ] += 1;
         }
-        if( VALUE == "E10" || VALUE == "E11"){
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Pre-pregnancy_diagnosis_of_diabetes"] = "Yes";
-          (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"]["Physical_exam"] += 1)
-
+        if (VALUE == "E10" || VALUE == "E11") {
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
+            "Pre-pregnancy_diagnosis_of_diabetes"
+          ] = "Yes";
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
+            "Physical_exam"
+          ] += 1;
         }
       }
-      
-      
-    }
-    );
+    });
     // console.log("details",uniquePersonIllnes);
-
 
     // console.log("main object",uniquePersonIllnes);
     (EventResult.recordset || []).forEach((item) => {
-      const { EVNET_ID, PERSON_ID, VISIT_ID, EVENT_CD, RESULT_VAL, EVENT_DESC } = item;
+      const {
+        EVNET_ID,
+        PERSON_ID,
+        VISIT_ID,
+        EVENT_CD,
+        RESULT_VAL,
+        EVENT_DESC,
+      } = item;
       if (uniquePersonIllnes[PERSON_ID]) {
         // Add Visit_ID wise data to each person.
         !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] &&
           (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
-          // !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] && 
-          // (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] = 0)
+        // !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] &&
+        // (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] = 0)
 
         //Add Systolic BP details to Person widget.
         if (EVENT_CD == 102225120) {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Resting_Systolic_BP"] = RESULT_VAL; 
-          if(RESULT_VAL >= 160){
-            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] = "RED";
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
+            "Resting_Systolic_BP"
+          ] = RESULT_VAL;
+          if (RESULT_VAL >= 160) {
+            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] =
+              "RED";
           }
-          if( 140 < RESULT_VAL < 159 ){
-            (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"]["Vitals_sign"] += 1)
+          if (140 < RESULT_VAL < 159) {
+            (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] ||
+              {})["Vitals_sign"] += 1;
             // uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] += 1;
-          }        
+          }
         }
 
         ////Add Diastolic BP details to Person widget.
@@ -203,24 +242,29 @@ router.get("/getPersonData", async function (req, res) {
         if (EVENT_CD == "R09.02") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
             "Oxygen_saturation"
-          ] = RESULT_VAL ;
-          if(RESULT_VAL <= 94){
-            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] = "RED";
+          ] = RESULT_VAL;
+          if (RESULT_VAL <= 94) {
+            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] =
+              "RED";
           }
-          if( 94 < RESULT_VAL < 97 ){
-            (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"]["Vitals_sign"] += 1)
+          if (94 < RESULT_VAL < 97) {
+            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
+              "Vitals_sign"
+            ] += 1;
             // uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] += 1;
           }
         }
         if (EVENT_CD == 9989898654) {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "Resting_HR"
-          ] = RESULT_VAL ;
-          if(RESULT_VAL >= 120){
-            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] = "RED";
+          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Resting_HR"] =
+            RESULT_VAL;
+          if (RESULT_VAL >= 120) {
+            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] =
+              "RED";
           }
-          if( 110 < RESULT_VAL < 119 ){
-            (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"]["Vitals_sign"] += 1)
+          if (110 < RESULT_VAL < 119) {
+            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
+              "Vitals_sign"
+            ] += 1;
 
             // uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] += 1;
           }
@@ -228,12 +272,15 @@ router.get("/getPersonData", async function (req, res) {
         if (EVENT_DESC == "heart rate") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
             "Respiratory_rate"
-          ] = RESULT_VAL ;
-          if(RESULT_VAL >= 30){
-            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] = "RED";
+          ] = RESULT_VAL;
+          if (RESULT_VAL >= 30) {
+            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] =
+              "RED";
           }
-          if( 24 < RESULT_VAL <= 29 ){
-            (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"]["Vitals_sign"] += 1)
+          if (24 < RESULT_VAL <= 29) {
+            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
+              "Vitals_sign"
+            ] += 1;
 
             // uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] += 1;
           }
@@ -256,43 +303,49 @@ router.get("/getPersonData", async function (req, res) {
           VISIT_TYPE: (visitIDMap[visitId] || {}).VISIT_TYPE || "",
           REG_DAYS_FROM_INDEX:
             (visitIDMap[visitId] || {}).REG_DAYS_FROM_INDEX || "",
-          Risk_Cat:visitDetail.Risk_Cat || "NA",
-          Risk_Factor: 0 ,
-          History_of_cardiovascular_disease: visitDetail.History_of_cardiovascular_disease || "NA",
-          Shortness_of_breath_at_rest: visitDetail.Shortness_of_breath_at_rest || "NA",
-          Severe_orthopnea:visitDetail.Severe_orthopnea || "NA",
-          Resting_HR:visitDetail.Resting_HR || "NA",
+          Risk_Cat: visitDetail.Risk_Cat || "NA",
+          Risk_Factor: 0,
+          History_of_cardiovascular_disease:
+            visitDetail.History_of_cardiovascular_disease || "NA",
+          Shortness_of_breath_at_rest:
+            visitDetail.Shortness_of_breath_at_rest || "NA",
+          Severe_orthopnea: visitDetail.Severe_orthopnea || "NA",
+          Resting_HR: visitDetail.Resting_HR || "NA",
           Resting_Systolic_BP: visitDetail.Resting_Systolic_BP || "NA",
-          Oxygen_saturation:visitDetail.Oxygen_saturation || "NA",
-          isAfricanAmerican:personDetails.RACE === "African American" ? "Yes" : "No",
+          Oxygen_saturation: visitDetail.Oxygen_saturation || "NA",
+          isAfricanAmerican:
+            personDetails.RACE === "African American" ? "Yes" : "No",
           isAgeMoreThan40: personDetails.CURRENT_AGE >= 40 ? "Yes" : "No",
-          Swelling_in_face_or_hands: visitDetail.Swelling_in_face_or_hands || "NA",
+          Swelling_in_face_or_hands:
+            visitDetail.Swelling_in_face_or_hands || "NA",
           Dyspnea: visitDetail.Dyspnea || "NA",
-          Mild_orthopnea:visitDetail.Mild_orthopnea || "NA",
-          Tachypnea:visitDetail.Tachypnea || "NA",
-          New_or_worsening_headache:visitDetail.New_or_worsening_headache || "NA",
+          Mild_orthopnea: visitDetail.Mild_orthopnea || "NA",
+          Tachypnea: visitDetail.Tachypnea || "NA",
+          New_or_worsening_headache:
+            visitDetail.New_or_worsening_headache || "NA",
           Asthma_unresponsive: visitDetail.Asthma_unresponsive || "NA",
           Palpitations: visitDetail.Palpitations || "NA",
           Dizziness_or_syncope: visitDetail.Dizziness_or_syncope || "NA",
-          Chest_pain:visitDetail.Chest_pain || "NA",
-        }
+          Chest_pain: visitDetail.Chest_pain || "NA",
+        };
 
         //  calculating risk category and risk factor count
 
-        if(visitDetail.Risk_Factor){
-          const {Symptoms, Vitals_sign, RiskFactor} = visitDetail.Risk_Factor
+        if (visitDetail.Risk_Factor) {
+          const { Symptoms, Vitals_sign, RiskFactor } = visitDetail.Risk_Factor;
           let totalRisk = Symptoms + RiskFactor + Vitals_sign;
-          result.Risk_Factor = totalRisk || "NA"
-          if(visitDetail.Risk_Cat !== "RED"){
-            result.Risk_Cat  = (Symptoms > 1 && Vitals_sign > 1 && RiskFactor >1 ) || (totalRisk > 4 && "RED")  || "NA"
-  
+          result.Risk_Factor = totalRisk || "NA";
+          if (visitDetail.Risk_Cat !== "RED") {
+            result.Risk_Cat =
+              (Symptoms > 1 && Vitals_sign > 1 && RiskFactor > 1) ||
+              (totalRisk > 4 && "RED") ||
+              "NA";
           }
         }
 
         preparedResult.push(result);
       }
     }
-    
 
     res.json({ data: preparedResult });
   } catch (err) {
