@@ -111,14 +111,20 @@ router.get("/getPersonData", async function (req, res) {
           visit["History_of_cardiovascular_disease"] = "Yes";
           visit["Risk_Cat"] = "RED";
         }
-        if (VALUE == "R09.02") {
+        if (VALUE == "R60.9") {
           visit["Swelling_in_face_or_hands"] = "Yes";
+          // Not sure need to confirm
+          visit["Risk_Factor"]["Symptoms"] += 1;
         }
         if (VALUE == "R06.02") {
           visit["Shortness_of_breath_at_rest"] = "Yes";
+          // Not sure need to confirm
+          visit["Risk_Factor"]["Symptoms"] += 1;
         }
         if (VALUE == "R06.01" && EVENT_DESC == "Severe orthopnea") {
           visit["Severe_orthopnea"] = "Yes";
+          // Not sure need to confirm
+          visit["Risk_Factor"]["Symptoms"] += 1;
         }
         if (VALUE == "R06.00") {
           visit["Dyspnea"] = "Yes";
@@ -134,6 +140,8 @@ router.get("/getPersonData", async function (req, res) {
         }
         if (VALUE == "R51") {
           visit["New_or_worsening_headache"] = "Yes";
+          // Not sure need to confirm
+          visit["Risk_Factor"]["Symptoms"] += 1;
         }
         if (VALUE == "J45") {
           visit["Asthma_unresponsive "] = "Yes";
@@ -221,7 +229,7 @@ router.get("/getPersonData", async function (req, res) {
             uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] =
               "RED";
           }
-          if (94 < RESULT_VAL < 97) {
+          if (95 <= RESULT_VAL <= 96) {
             uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
               "Vitals_sign"
             ] += 1;
@@ -235,7 +243,7 @@ router.get("/getPersonData", async function (req, res) {
             uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] =
               "RED";
           }
-          if (110 < RESULT_VAL < 119) {
+          if (110 <= RESULT_VAL <= 119) {
             uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
               "Vitals_sign"
             ] += 1;
@@ -251,7 +259,7 @@ router.get("/getPersonData", async function (req, res) {
             uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] =
               "RED";
           }
-          if (24 < RESULT_VAL <= 29) {
+          if (24 <= RESULT_VAL <= 29) {
             uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
               "Vitals_sign"
             ] += 1;
