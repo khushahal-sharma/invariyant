@@ -141,7 +141,7 @@ router.get("/getPersonData", async function (req, res) {
           // Not sure need to confirm
           //visit["Risk_Factor"]["Symptoms"] += 1;
         } else if (VALUE.includes("J45")) {
-          visit["Asthma_unresponsive "] = "Yes";
+          visit["Asthma_unresponsive"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
         } else if (VALUE == "R07.9") {
           visit["Chest_pain"] = "Yes";
@@ -248,6 +248,7 @@ router.get("/getPersonData", async function (req, res) {
         }
       }
     });
+
     //Prepare final result array from uniquePersonIllnes Object.
     const preparedResult = [];
     for (let PersonID in uniquePersonIllnes) {
@@ -282,7 +283,7 @@ router.get("/getPersonData", async function (req, res) {
           Swelling_in_face_or_hands:
             visitDetail.Swelling_in_face_or_hands || "NA",
           Dyspnea: visitDetail.Dyspnea || "NA",
-          //Mild_orthopnea: visitDetail.Mild_orthopnea || "NA", removed till get full details
+          //Mild_orthopnea: visitDetail.Mild_orthopnea || "NA", removed till get full
           Tachypnea: visitDetail.Tachypnea || "NA",
           New_or_worsening_headache:
             visitDetail.New_or_worsening_headache || "NA",
