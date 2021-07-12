@@ -113,22 +113,25 @@ router.get("/getPersonData", async function (req, res) {
         } else if (VALUE == "R60.9") {
           visit["Swelling_in_face_or_hands"] = "Yes";
           // Not sure need to confirm
-          visit["Risk_Factor"]["Symptoms"] += 1;
+          //visit["Risk_Factor"]["Symptoms"] += 1;
         } else if (VALUE == "R06.02") {
           visit["Shortness_of_breath_at_rest"] = "Yes";
           visit["Risk_Cat"] = "RED";
           // Not sure need to confirm
           // visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "R06.01" && EVENT_DESC == "Severe orthopnea") {
+        } else if (
+          VALUE == "R06.01" &&
+          EVENT_DESC.includes("Severe orthopnea")
+        ) {
           visit["Severe_orthopnea"] = "Yes";
           visit["Risk_Cat"] = "RED";
           // Not sure need to confirm
           // visit["Risk_Factor"]["Symptoms"] += 1;
+        } else if (VALUE == "R06.01" && EVENT_DESC.includes("Mild orthopnea")) {
+          visit["Mild_orthopnea"] = "Yes";
+          visit["Risk_Factor"]["Symptoms"] += 1;
         } else if (VALUE == "R06.00") {
           visit["Dyspnea"] = "Yes";
-          visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "R06.01" && EVENT_DESC == "Mild orthopnea") {
-          visit["Mild_orthopnea"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
         } else if (VALUE == "R06.82") {
           visit["Tachypnea"] = "Yes";
@@ -136,29 +139,34 @@ router.get("/getPersonData", async function (req, res) {
         } else if (VALUE == "R51") {
           visit["New_or_worsening_headache"] = "Yes";
           // Not sure need to confirm
-          visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "J45") {
+          //visit["Risk_Factor"]["Symptoms"] += 1;
+        } else if (VALUE.includes("J45")) {
           visit["Asthma_unresponsive "] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
         } else if (VALUE == "R07.9") {
           visit["Chest_pain"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
         } else if (VALUE == "R42" || VALUE == "R55") {
-          visit["Dizziness_or_syncope"] = "Yes";
-          visit["Risk_Factor"]["Symptoms"] += 1;
+          if (!visit["Dizziness_or_syncope"]) {
+            visit["Dizziness_or_syncope"] = "Yes";
+            visit["Risk_Factor"]["Symptoms"] += 1;
+          }
         } else if (VALUE == "R00.2") {
           visit["Palpitations"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
         } else if (VALUE == "R01.1") {
           visit["Loud_murmur_heart"] = "Yes";
           visit["Risk_Factor"]["Physical_exam"] += 1;
-        } else if (VALUE == "E10" || VALUE == "E11") {
-          visit["Pre_pregnancy_diagnosis_of_diabetes"] = "Yes";
-          visit["Risk_Factor"]["RiskFactor"] += 1;
+        } else if (VALUE.includes("E10") || VALUE.includes("E11")) {
+          if (!visit["Pre_pregnancy_diagnosis_of_diabetes"]) {
+            visit["Pre_pregnancy_diagnosis_of_diabetes"] = "Yes";
+            visit["Risk_Factor"]["RiskFactor"] += 1;
+          }
         } else if (VALUE.includes("i10")) {
           visit["Pre_pregnancy_diagnosis_of_hypertension"] = "Yes";
           visit["Risk_Factor"]["RiskFactor"] += 1;
         } else if (VALUE == "R09.02") {
+          // value is not present in diagnosis value only yes if found.
           visit["Oxygen_saturation"] = "<=94";
           visit["Risk_Cat"] = "RED";
         }
@@ -178,12 +186,11 @@ router.get("/getPersonData", async function (req, res) {
         // Add Visit_ID wise data to each person.
         !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] &&
           (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
-        // !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] &&
-        // (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] = 0)
 
+        let visit = uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID];
         // defesive check for risk factors
-        !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] &&
-          (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] = {
+        !visit["Risk_Factor"] &&
+          (visit["Risk_Factor"] = {
             Symptoms: 0,
             Vitals_sign: 0,
             Physical_exam: 0,
@@ -192,17 +199,11 @@ router.get("/getPersonData", async function (req, res) {
 
         //Add Systolic BP details to Person widget.
         if (EVENT_CD == 102225120) {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "Resting_Systolic_BP"
-          ] = RESULT_VAL;
+          visit["Resting_Systolic_BP"] = RESULT_VAL;
           if (RESULT_VAL >= 160) {
-            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] =
-              "RED";
-          }
-          if (RESULT_VAL >= 140 && RESULT_VAL <= 159) {
-            (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] ||
-              {})["Vitals_sign"] += 1;
-            // uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] += 1;
+            visit["Risk_Cat"] = "RED";
+          } else if (RESULT_VAL >= 140) {
+            (visit["Risk_Factor"] || {})["Vitals_sign"] += 1;
           }
         }
 
@@ -222,7 +223,7 @@ router.get("/getPersonData", async function (req, res) {
         //     uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] =
         //       "RED";
         //   }
-        //   if (95 <= RESULT_VAL <= 96) {
+        //   else if (96 <= RESULT_VAL) {
         //     uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
         //       "Vitals_sign"
         //     ] += 1;
@@ -230,34 +231,19 @@ router.get("/getPersonData", async function (req, res) {
         //   }
         // }
         //------------------------------
-        else if (EVENT_DESC == "heart rate") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Resting_HR"] =
-            RESULT_VAL;
+        else if (EVENT_DESC.includes("heart rate")) {
+          visit["Resting_HR"] = RESULT_VAL;
           if (RESULT_VAL >= 120) {
-            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] =
-              "RED";
+            visit["Risk_Cat"] = "RED";
+          } else if (RESULT_VAL >= 110) {
+            visit["Risk_Factor"]["Vitals_sign"] += 1;
           }
-          if (RESULT_VAL >= 110 && RESULT_VAL <= 119) {
-            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
-              "Vitals_sign"
-            ] += 1;
-
-            // uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] += 1;
-          }
-        } else if (EVENT_DESC == "Respiratory rate") {
-          uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
-            "Respiratory_rate"
-          ] = RESULT_VAL;
+        } else if (EVENT_DESC.includes("Respiratory rate")) {
+          visit["Respiratory_rate"] = RESULT_VAL;
           if (RESULT_VAL >= 30) {
-            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Cat"] =
-              "RED";
-          }
-          if (RESULT_VAL >= 24 && RESULT_VAL <= 29) {
-            uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"][
-              "Vitals_sign"
-            ] += 1;
-
-            // uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] += 1;
+            visit["Risk_Cat"] = "RED";
+          } else if (RESULT_VAL >= 24) {
+            visit["Risk_Factor"]["Vitals_sign"] += 1;
           }
         }
       }
@@ -296,7 +282,7 @@ router.get("/getPersonData", async function (req, res) {
           Swelling_in_face_or_hands:
             visitDetail.Swelling_in_face_or_hands || "NA",
           Dyspnea: visitDetail.Dyspnea || "NA",
-          Mild_orthopnea: visitDetail.Mild_orthopnea || "NA",
+          //Mild_orthopnea: visitDetail.Mild_orthopnea || "NA", removed till get full details
           Tachypnea: visitDetail.Tachypnea || "NA",
           New_or_worsening_headache:
             visitDetail.New_or_worsening_headache || "NA",
@@ -320,16 +306,17 @@ router.get("/getPersonData", async function (req, res) {
         //  calculating risk category and risk factor count
 
         if (visitDetail.Risk_Factor) {
-          const { Symptoms, Vitals_sign, RiskFactor } = visitDetail.Risk_Factor;
-          let totalRisk = Symptoms + RiskFactor + Vitals_sign;
+          const { Symptoms, Vitals_sign, RiskFactor, Physical_exam } =
+            visitDetail.Risk_Factor;
+          let totalRisk = Symptoms + RiskFactor + Vitals_sign + Physical_exam;
           result.Risk_Factor = totalRisk || "NA";
           if (visitDetail.Risk_Cat !== "RED") {
             result.Risk_Cat =
               (Symptoms >= 1 && Vitals_sign >= 1 && RiskFactor >= 1) ||
-              (totalRisk >= 4 && "RED") ||
-              "NA";
+              totalRisk >= 4
+                ? "RED"
+                : "NA";
           }
-          console.log(Symptoms, Vitals_sign, RiskFactor);
         }
 
         preparedResult.push(result);

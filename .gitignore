@@ -2,3 +2,4 @@ Node_Modules/
 .history/
 package.lock.json
 dbConnection.js
+Database/
