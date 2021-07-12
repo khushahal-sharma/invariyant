@@ -319,7 +319,10 @@ router.get("/getPersonData", async function (req, res) {
           }
         }
 
-        if (result.Risk_Cat == "RED" || result.Risk_Factor.RiskFactor != "NA") {
+        if (
+          result.Risk_Cat == "RED" ||
+          (result.Risk_Factor && result.Risk_Factor != "NA")
+        ) {
           preparedResult.push(result);
         }
       }
