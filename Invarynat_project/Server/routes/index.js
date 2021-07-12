@@ -110,70 +110,55 @@ router.get("/getPersonData", async function (req, res) {
         if (VALUE == "O99.419") {
           visit["History_of_cardiovascular_disease"] = "Yes";
           visit["Risk_Cat"] = "RED";
-        }
-        if (VALUE == "R60.9") {
+        } else if (VALUE == "R60.9") {
           visit["Swelling_in_face_or_hands"] = "Yes";
           // Not sure need to confirm
           visit["Risk_Factor"]["Symptoms"] += 1;
-        }
-        if (VALUE == "R06.02") {
+        } else if (VALUE == "R06.02") {
           visit["Shortness_of_breath_at_rest"] = "Yes";
           visit["Risk_Cat"] = "RED";
           // Not sure need to confirm
           // visit["Risk_Factor"]["Symptoms"] += 1;
-        }
-        if (VALUE == "R06.01" && EVENT_DESC == "Severe orthopnea") {
+        } else if (VALUE == "R06.01" && EVENT_DESC == "Severe orthopnea") {
           visit["Severe_orthopnea"] = "Yes";
           visit["Risk_Cat"] = "RED";
           // Not sure need to confirm
           // visit["Risk_Factor"]["Symptoms"] += 1;
-        }
-        if (VALUE == "R06.00") {
+        } else if (VALUE == "R06.00") {
           visit["Dyspnea"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
-        }
-        if (VALUE == "R06.01" && EVENT_DESC == "Mild orthopnea") {
+        } else if (VALUE == "R06.01" && EVENT_DESC == "Mild orthopnea") {
           visit["Mild_orthopnea"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
-        }
-        if (VALUE == "R06.82") {
+        } else if (VALUE == "R06.82") {
           visit["Tachypnea"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
-        }
-        if (VALUE == "R51") {
+        } else if (VALUE == "R51") {
           visit["New_or_worsening_headache"] = "Yes";
           // Not sure need to confirm
           visit["Risk_Factor"]["Symptoms"] += 1;
-        }
-        if (VALUE == "J45") {
+        } else if (VALUE == "J45") {
           visit["Asthma_unresponsive "] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
-        }
-        if (VALUE == "R07.9") {
+        } else if (VALUE == "R07.9") {
           visit["Chest_pain"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
-        }
-        if (VALUE == "R42" || VALUE == "R55") {
+        } else if (VALUE == "R42" || VALUE == "R55") {
           visit["Dizziness_or_syncope"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
-        }
-        if (VALUE == "R00.2") {
+        } else if (VALUE == "R00.2") {
           visit["Palpitations"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
-        }
-        if (VALUE == "R01.1") {
+        } else if (VALUE == "R01.1") {
           visit["Loud_murmur_heart"] = "Yes";
           visit["Risk_Factor"]["Physical_exam"] += 1;
-        }
-        if (VALUE == "E10" || VALUE == "E11") {
+        } else if (VALUE == "E10" || VALUE == "E11") {
           visit["Pre_pregnancy_diagnosis_of_diabetes"] = "Yes";
           visit["Risk_Factor"]["RiskFactor"] += 1;
-        }
-        if (VALUE.includes("i10")) {
+        } else if (VALUE.includes("i10")) {
           visit["Pre_pregnancy_diagnosis_of_hypertension"] = "Yes";
           visit["Risk_Factor"]["RiskFactor"] += 1;
-        }
-        if (VALUE == "R09.02") {
+        } else if (VALUE == "R09.02") {
           visit["Oxygen_saturation"] = "<=94";
           visit["Risk_Cat"] = "RED";
         }
@@ -245,7 +230,7 @@ router.get("/getPersonData", async function (req, res) {
         //   }
         // }
         //------------------------------
-        if (EVENT_DESC == "heart rate") {
+        else if (EVENT_DESC == "heart rate") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Resting_HR"] =
             RESULT_VAL;
           if (RESULT_VAL >= 120) {
@@ -259,8 +244,7 @@ router.get("/getPersonData", async function (req, res) {
 
             // uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID]["Risk_Factor"] += 1;
           }
-        }
-        if (EVENT_DESC == "Respiratory rate") {
+        } else if (EVENT_DESC == "Respiratory rate") {
           uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID][
             "Respiratory_rate"
           ] = RESULT_VAL;
@@ -284,7 +268,10 @@ router.get("/getPersonData", async function (req, res) {
       const personDetails = uniquePersonIllnes[PersonID];
 
       for (let visitId in personDetails["VISITS"]) {
-        const visitDetail = personDetails["VISITS"][visitId];
+        const visitDetail = personDetails["VISITS"][visitId],
+          currentAge =
+            (visitIDMap[visitId] || {}).CURRENT_AGE ||
+            personDetails.CURRENT_AGE;
 
         const result = {
           PERSON_ID: personDetails.PERSON_ID,
@@ -305,7 +292,7 @@ router.get("/getPersonData", async function (req, res) {
           Oxygen_saturation: visitDetail.Oxygen_saturation || "NA",
           Respiratory_rate: visitDetail.Respiratory_rate || "NA",
           RACE: personDetails.RACE,
-          Age: personDetails.CURRENT_AGE,
+          Age: currentAge,
           Swelling_in_face_or_hands:
             visitDetail.Swelling_in_face_or_hands || "NA",
           Dyspnea: visitDetail.Dyspnea || "NA",
@@ -324,7 +311,7 @@ router.get("/getPersonData", async function (req, res) {
             visitDetail.Pre_pregnancy_diagnosis_of_hypertension || "NA",
         };
 
-        if (personDetails.CURRENT_AGE >= 40) {
+        if (currentAge >= 40) {
           visitDetail.Risk_Factor.RiskFactor += 1;
         }
         if (personDetails.RACE == "African American") {
