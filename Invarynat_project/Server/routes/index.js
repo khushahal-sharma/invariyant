@@ -12,10 +12,9 @@ router.get("/testApi", function (req, res) {
     .then(() => {
       console.log(" conection established ", sql.Table);
 
-      return sql.query("SELECT TOP 3 * FROM Person");
+      return sql.query("SELECT TOP 1 * FROM Person");
     })
     .then((result) => {
-      console.log(" query result  ", result);
       res.json({ data: result.recordset });
     })
     .catch((err) => {
@@ -46,7 +45,7 @@ router.get("/getPersonData", async function (req, res) {
     }}
      */
 
-    let result = await sql.query("SELECT Top 100 * FROM Person"),
+    let result = await sql.query("SELECT Top 20 * FROM Person"),
       uniquePersonIllnes = {},
       personIdValues = "";
     // Risk_Factor = {
@@ -320,7 +319,9 @@ router.get("/getPersonData", async function (req, res) {
           }
         }
 
-        preparedResult.push(result);
+        if (result.Risk_Cat == "RED" || result.Risk_Factor.RiskFactor != "NA") {
+          preparedResult.push(result);
+        }
       }
     }
 
