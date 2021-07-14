@@ -126,10 +126,12 @@ router.get("/getPersonData", async function (req, res) {
           visit["Risk_Cat"] = "RED";
           // Not sure need to confirm
           // visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "R06.01" && EVENT_DESC.includes("Mild orthopnea")) {
-          visit["Mild_orthopnea"] = "Yes";
-          visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "R06.00") {
+        } 
+        // else if (VALUE == "R06.01" && EVENT_DESC.includes("Mild orthopnea")) {
+        //   visit["Mild_orthopnea"] = "Yes";
+        //   visit["Risk_Factor"]["Symptoms"] += 1;
+        // } 
+        else if (VALUE == "R06.00") {
           visit["Dyspnea"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
         } else if (VALUE == "R06.82") {
