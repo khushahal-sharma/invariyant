@@ -16,5 +16,25 @@ exports.dbConnection = function () {
       enableArithAbort: true,
     },
   };
+
+  // For Azure sql server example
+  /*const config = {
+    client: "mssql",
+    server: "stg-invaryant-eus-sqlsrv.database.windows.net",
+    database: "stg-invaryant-eus-sql-db",
+    port: 1433,
+    authentication: {
+      type: "default",
+      options: {
+        userName: "invaryantDbAdmin",
+        password: "u_cXMLy/MnFY7*yV",
+      },
+    },
+    options: {
+      encrypt: true,
+      enableArithAbort: true,
+    },
+  };*/
+
   return config;
 };
