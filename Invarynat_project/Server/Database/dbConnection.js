@@ -1,7 +1,7 @@
 exports.dbConnection = function () {
   const config = {
     client: "mssql",
-    server: "RITU-PC",
+    server: "DESKTOP-DGUDS34",
     database: "test",
     authentication: {
       type: "default",
@@ -18,23 +18,23 @@ exports.dbConnection = function () {
   };
 
   // For Azure sql server example
-  /*const config = {
+  /*
+  const config = {
     client: "mssql",
-    server: "stg-invaryant-eus-sqlsrv.database.windows.net",
-    database: "stg-invaryant-eus-sql-db",
-    port: 1433,
+    server: "az-eastus2-prod-spoke1-mhri-mmr-sql.privatelink.database.windows.net",
+    database: "az-eastus2-prod-spoke1-mhri-mmr-sqldb",
     authentication: {
       type: "default",
       options: {
-        userName: "invaryantDbAdmin",
-        password: "u_cXMLy/MnFY7*yV",
+        userName: "mmuser",
+        password: "xxx",
       },
     },
     options: {
       encrypt: true,
       enableArithAbort: true,
     },
-  };*/
-
+  };
+  */
   return config;
 };
