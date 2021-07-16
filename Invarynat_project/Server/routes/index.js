@@ -45,7 +45,7 @@ router.get("/getPersonData", async function (req, res) {
     }}
      */
 
-    let result = await sql.query("SELECT Top 20 * FROM Person"),
+    let result = await sql.query("SELECT Top 50 * FROM Person"),
       uniquePersonIllnes = {},
       personIdValues = "";
     // Risk_Factor = {
@@ -106,21 +106,22 @@ router.get("/getPersonData", async function (req, res) {
             RiskFactor: 0,
           });
 
-        if (VALUE == "O99.419") {
+        if (VALUE == "O99.419" && !visit["History_of_cardiovascular_disease"]) {
           visit["History_of_cardiovascular_disease"] = "Yes";
           visit["Risk_Cat"] = "RED";
         } else if (VALUE == "R60.9") {
           visit["Swelling_in_face_or_hands"] = "Yes";
           // Not sure need to confirm
           //visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "R06.02") {
+        } else if (VALUE == "R06.02" && !visit["Shortness_of_breath_at_rest"]) {
           visit["Shortness_of_breath_at_rest"] = "Yes";
           visit["Risk_Cat"] = "RED";
           // Not sure need to confirm
           // visit["Risk_Factor"]["Symptoms"] += 1;
         } else if (
           VALUE == "R06.01" &&
-          EVENT_DESC.includes("Severe orthopnea")
+          EVENT_DESC.includes("Severe orthopnea") &&
+          !visit["Severe_orthopnea"]
         ) {
           visit["Severe_orthopnea"] = "Yes";
           visit["Risk_Cat"] = "RED";
@@ -131,20 +132,20 @@ router.get("/getPersonData", async function (req, res) {
         //   visit["Mild_orthopnea"] = "Yes";
         //   visit["Risk_Factor"]["Symptoms"] += 1;
         // }
-        else if (VALUE == "R06.00") {
+        else if (VALUE == "R06.00" && !visit["Dyspnea"]) {
           visit["Dyspnea"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "R06.82") {
+        } else if (VALUE == "R06.82" && !visit["Tachypnea"]) {
           visit["Tachypnea"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
         } else if (VALUE == "R51") {
           visit["New_or_worsening_headache"] = "Yes";
           // Not sure need to confirm
           //visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE.includes("J45")) {
+        } else if (VALUE.includes("J45") && !visit["Asthma_unresponsive"]) {
           visit["Asthma_unresponsive"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "R07.9") {
+        } else if (VALUE == "R07.9" && !visit["Chest_pain"]) {
           visit["Chest_pain"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
         } else if (VALUE == "R42" || VALUE == "R55") {
@@ -152,10 +153,10 @@ router.get("/getPersonData", async function (req, res) {
             visit["Dizziness_or_syncope"] = "Yes";
             visit["Risk_Factor"]["Symptoms"] += 1;
           }
-        } else if (VALUE == "R00.2") {
+        } else if (VALUE == "R00.2" && !visit["Palpitations"]) {
           visit["Palpitations"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "R01.1") {
+        } else if (VALUE == "R01.1" && !visit["Loud_murmur_heart"]) {
           visit["Loud_murmur_heart"] = "Yes";
           visit["Risk_Factor"]["Physical_exam"] += 1;
         } else if (VALUE.includes("E10") || VALUE.includes("E11")) {
@@ -163,10 +164,13 @@ router.get("/getPersonData", async function (req, res) {
             visit["Pre_pregnancy_diagnosis_of_diabetes"] = "Yes";
             visit["Risk_Factor"]["RiskFactor"] += 1;
           }
-        } else if (VALUE.includes("i10")) {
+        } else if (
+          VALUE.includes("i10") &&
+          !visit["Pre_pregnancy_diagnosis_of_hypertension"]
+        ) {
           visit["Pre_pregnancy_diagnosis_of_hypertension"] = "Yes";
           visit["Risk_Factor"]["RiskFactor"] += 1;
-        } else if (VALUE == "R09.02") {
+        } else if (VALUE == "R09.02" && !visit["Oxygen_saturation"]) {
           // value is not present in diagnosis value only yes if found.
           visit["Oxygen_saturation"] = "<=94";
           visit["Risk_Cat"] = "RED";
@@ -200,11 +204,13 @@ router.get("/getPersonData", async function (req, res) {
 
         //Add Systolic BP details to Person widget.
         if (EVENT_CD == 102225120) {
-          visit["Resting_Systolic_BP"] = RESULT_VAL;
-          if (RESULT_VAL >= 160) {
-            visit["Risk_Cat"] = "RED";
-          } else if (RESULT_VAL >= 140) {
-            (visit["Risk_Factor"] || {})["Vitals_sign"] += 1;
+          if (!visit["Resting_Systolic_BP"]) {
+            visit["Resting_Systolic_BP"] = RESULT_VAL;
+            if (RESULT_VAL >= 160) {
+              visit["Risk_Cat"] = "RED";
+            } else if (RESULT_VAL >= 140) {
+              (visit["Risk_Factor"] || {})["Vitals_sign"] += 1;
+            }
           }
         }
 
@@ -233,18 +239,22 @@ router.get("/getPersonData", async function (req, res) {
         // }
         //------------------------------
         else if (EVENT_DESC.includes("heart rate")) {
-          visit["Resting_HR"] = RESULT_VAL;
-          if (RESULT_VAL >= 120) {
-            visit["Risk_Cat"] = "RED";
-          } else if (RESULT_VAL >= 110) {
-            visit["Risk_Factor"]["Vitals_sign"] += 1;
+          if (!visit["Resting_HR"]) {
+            visit["Resting_HR"] = RESULT_VAL;
+            if (RESULT_VAL >= 120) {
+              visit["Risk_Cat"] = "RED";
+            } else if (RESULT_VAL >= 110) {
+              visit["Risk_Factor"]["Vitals_sign"] += 1;
+            }
           }
         } else if (EVENT_DESC.includes("Respiratory rate")) {
-          visit["Respiratory_rate"] = RESULT_VAL;
-          if (RESULT_VAL >= 30) {
-            visit["Risk_Cat"] = "RED";
-          } else if (RESULT_VAL >= 24) {
-            visit["Risk_Factor"]["Vitals_sign"] += 1;
+          if (!visit["Respiratory_rate"]) {
+            visit["Respiratory_rate"] = RESULT_VAL;
+            if (RESULT_VAL >= 30) {
+              visit["Risk_Cat"] = "RED";
+            } else if (RESULT_VAL >= 24) {
+              visit["Risk_Factor"]["Vitals_sign"] += 1;
+            }
           }
         }
       }
