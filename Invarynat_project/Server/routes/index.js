@@ -5,6 +5,8 @@ var router = express.Router();
 var sql = require("mssql");
 var dbConfig = require("../Database/dbConnection");
 
+import { DiagnosesPointers } from "../Constant/indexConstants";
+
 /* test api by getting 1 data of person table */
 router.get("/testApi", function (req, res) {
   sql
@@ -106,7 +108,17 @@ router.get("/getPersonData", async function (req, res) {
             RiskFactor: 0,
           });
 
-        if (VALUE == "O99.419" && !visit["History_of_cardiovascular_disease"]) {
+        if (DiagnosesPointers[VALUE]) {
+          const { pointerkey, pointerValue, riskCategory } =
+            DiagnosesPointers[VALUE];
+          if (!visit[pointerkey]) {
+            visit[pointerkey] = pointerValue || "Yes";
+            riskCategory && (visit["Risk_Cat"] = riskCategory);
+          }
+        } else if (
+          VALUE == "O99.419" &&
+          !visit["History_of_cardiovascular_disease"]
+        ) {
           visit["History_of_cardiovascular_disease"] = "Yes";
           visit["Risk_Cat"] = "RED";
         } else if (VALUE == "R60.9") {
