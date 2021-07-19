@@ -135,24 +135,7 @@ router.get("/getPersonData", async function (req, res) {
         //   visit["Mild_orthopnea"] = "Yes";
         //   visit["Risk_Factor"]["Symptoms"] += 1;
         // }
-        else if (VALUE.includes("J45") && !visit["Asthma_unresponsive"]) {
-          visit["Asthma_unresponsive"] = "Yes";
-          visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "R07.9" && !visit["Chest_pain"]) {
-          visit["Chest_pain"] = "Yes";
-          visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "R42" || VALUE == "R55") {
-          if (!visit["Dizziness_or_syncope"]) {
-            visit["Dizziness_or_syncope"] = "Yes";
-            visit["Risk_Factor"]["Symptoms"] += 1;
-          }
-        } else if (VALUE == "R00.2" && !visit["Palpitations"]) {
-          visit["Palpitations"] = "Yes";
-          visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "R01.1" && !visit["Loud_murmur_heart"]) {
-          visit["Loud_murmur_heart"] = "Yes";
-          visit["Risk_Factor"]["Physical_exam"] += 1;
-        } else if (VALUE.includes("E10") || VALUE.includes("E11")) {
+         else if (VALUE.includes("E10") || VALUE.includes("E11")) {
           if (!visit["Pre_pregnancy_diagnosis_of_diabetes"]) {
             visit["Pre_pregnancy_diagnosis_of_diabetes"] = "Yes";
             visit["Risk_Factor"]["RiskFactor"] += 1;
@@ -163,10 +146,6 @@ router.get("/getPersonData", async function (req, res) {
         ) {
           visit["Pre_pregnancy_diagnosis_of_hypertension"] = "Yes";
           visit["Risk_Factor"]["RiskFactor"] += 1;
-        } else if (VALUE == "R09.02" && !visit["Oxygen_saturation"]) {
-          // value is not present in diagnosis value only yes if found.
-          visit["Oxygen_saturation"] = "<=94";
-          visit["Risk_Cat"] = "RED";
         }
       }
     });
@@ -329,6 +308,20 @@ router.get("/getPersonData", async function (req, res) {
           (result.Risk_Factor && result.Risk_Factor != "NA")
         ) {
           preparedResult.push(result);
+          preparedResult.push(result);
+          preparedResult.push(result);
+          preparedResult.push(result);
+          preparedResult.push(result);
+          preparedResult.push(result);
+          preparedResult.push(result);
+          preparedResult.push(result);
+          preparedResult.push(result);
+          preparedResult.push(result);
+          preparedResult.push(result);
+          preparedResult.push(result);
+          preparedResult.push(result);
+          preparedResult.push(result);
+          
         }
       }
     }

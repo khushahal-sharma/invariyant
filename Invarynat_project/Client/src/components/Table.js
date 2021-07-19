@@ -62,7 +62,7 @@ const Table = () => {
       columns,
       data,
       initialState: {
-        pageSize: 20,
+        pageSize: 100,
       },
     },
     usePagination
