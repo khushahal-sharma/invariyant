@@ -6,6 +6,6 @@ const DiagnosesPointers = {
   },
 };
 
-exports = {
+module.exports = {
   DiagnosesPointers,
 };

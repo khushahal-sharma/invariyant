@@ -61,6 +61,9 @@ const Table = () => {
     {
       columns,
       data,
+      initialState: {
+        pageSize: 25,
+      },
     },
     usePagination
   );
@@ -87,35 +90,37 @@ const Table = () => {
         <Loading />
       ) : (
         <>
-          <table id="table-to-xls" {...getTableProps()}>
-            <thead>
-              {headerGroups.map((headerGroup) => {
-                return (
-                  <tr {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map((column) => {
-                      return (
-                        <th {...column.getHeaderProps()}>
-                          {column.render("Header")}
-                        </th>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </thead>
-            <tbody {...getTableBodyProps()}>
-              {page.map((row) => {
-                prepareRow(row);
-                return (
-                  <tr {...row.getRowProps()}>
-                    {row.cells.map((cell) => (
-                      <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
-                    ))}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="table_items">
+            <table id="table-to-xls" {...getTableProps()}>
+              <thead>
+                {headerGroups.map((headerGroup) => {
+                  return (
+                    <tr {...headerGroup.getHeaderGroupProps()}>
+                      {headerGroup.headers.map((column) => {
+                        return (
+                          <th {...column.getHeaderProps()}>
+                            {column.render("Header")}
+                          </th>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </thead>
+              <tbody {...getTableBodyProps()}>
+                {page.map((row) => {
+                  prepareRow(row);
+                  return (
+                    <tr {...row.getRowProps()}>
+                      {row.cells.map((cell) => (
+                        <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
           <div className="table-footer">
             <span>
               Page{" "}

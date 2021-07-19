@@ -5,7 +5,7 @@ var router = express.Router();
 var sql = require("mssql");
 var dbConfig = require("../Database/dbConnection");
 
-import { DiagnosesPointers } from "../Constant/indexConstants";
+const { DiagnosesPointers } = require("../Constant/indexConstants");
 
 /* test api by getting 1 data of person table */
 router.get("/testApi", function (req, res) {
@@ -347,6 +347,9 @@ router.get("/getPersonData", async function (req, res) {
           result.Risk_Cat == "RED" ||
           (result.Risk_Factor && result.Risk_Factor != "NA")
         ) {
+          preparedResult.push(result);
+          preparedResult.push(result);
+          preparedResult.push(result);
           preparedResult.push(result);
         }
       }
