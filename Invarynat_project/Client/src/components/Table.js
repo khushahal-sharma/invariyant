@@ -1,49 +1,63 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { COLUMNS } from "./Columns";
 import { usePagination, useTable } from "react-table";
-import MOCK_DATA from "./MOCK_DATA.json";
 import "./table.css";
-// import List from "./List";
 import ReactHtmlTableToExcel from "react-html-table-to-excel";
-import Loading from './Loading';
+import Loading from "./Loading";
 
-const Table = ({selectedMenu}) => {
-  // const [tableState, setTableState] = useState({});
-  const [ loading, setLoading] = useState(false);
+const Table = () => {
+  const [loading, setLoading] = useState(true);
+  const [mockData, setMockData] = useState([]);
+  const [makeColumns, setMakeColumns] = useState([]);
 
-  let columns = [],
-    data = [];
-  // useEffect(() => {
-  //   const url = `http://127.0.0.1:7000/${
-  //     selectedMenu || "getPersonData"
-  //   }`;
+  let tableInstance,
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    prepareRow,
+    page,
+    nextPage,
+    previousPage,
+    canPreviousPage,
+    canNextPage,
+    pageOptions,
+    state;
 
-  //   const fetchData = async () => {
-  //     try {
-  //       // setLoading(true)
-  //       const response = await fetch(url);
-  //       const updatedData = await response.json();
-  //       // if(updatedData) setLoading(false)
-  //       console.log(" updated data ", updatedData);
-        
-  //     } catch (error) {
-  //       console.log("error", error);
-  //       if(error){
-  //         return (
-  //           <h2>Somthing went wrong.Try reloading</h2>
-  //         )
-  //       }
-  //       // error message show to state.
-  //     }
-  //   };
+  useEffect(() => {
+    const url = `http://127.0.0.1:7000/getPersonData`;
 
-  //   fetchData();
-  // }, []);
+    const fetchData = async () => {
+      try {
+        const response = await fetch(url);
+        const updatedData = await response.json();
+        // console.log(" updated data ", updatedData);
+        if (updatedData.data) {
+          let keys = Object.keys(updatedData.data[0] || {});
+          let prepareCol = [];
+          keys.map((key) => {
+            let obj = {};
+            obj.Header = key;
+            obj.accessor = key;
+            prepareCol.push(obj);
+          });
+          setMakeColumns(prepareCol);
+          setMockData(updatedData.data);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.log("error", error);
+        if (error) {
+          return <h2>Somthing went wrong.Try reloading</h2>;
+        }
+        // error message show to state.
+      }
+    };
+    fetchData();
+  }, []);
 
-  columns = useMemo(() => COLUMNS[selectedMenu], []);
-  data = useMemo(() => MOCK_DATA, []);
+  let columns = useMemo(() => makeColumns, [mockData]),
+    data = useMemo(() => mockData, [mockData]);
 
-  const tableInstance = useTable(
+  tableInstance = useTable(
     {
       columns,
       data,
@@ -51,11 +65,10 @@ const Table = ({selectedMenu}) => {
     usePagination
   );
 
-  const {
+  ({
     getTableProps,
     getTableBodyProps,
     headerGroups,
-    rows,
     prepareRow,
     page,
     nextPage,
@@ -64,44 +77,45 @@ const Table = ({selectedMenu}) => {
     canNextPage,
     pageOptions,
     state,
-  } = tableInstance;
+  } = tableInstance);
 
   const { pageIndex } = state;
 
   return (
     <div className="table">
-      {/* {<div>Loading....</div>} */}
-      {loading ? <Loading/> : 
-      <>
-        <table id="table-to-xls" {...getTableProps()}>
-          <thead>
-            {headerGroups.map((headerGroup) => {
-              return (
-                <tr {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map((column) => {
-                    return (
-                      <th {...column.getHeaderProps()}>
-                        {column.render("Header")}
-                      </th>
-                    );
-                  })}
-                </tr>
-              );
-            })}
-          </thead>
-          <tbody {...getTableBodyProps()}>
-            {page.map((row) => {
-              prepareRow(row);
-              return (
-                <tr {...row.getRowProps()}>
-                  {row.cells.map((cell) => (
-                    <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
-                  ))}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      {loading ? (
+        <Loading />
+      ) : (
+        <>
+          <table id="table-to-xls" {...getTableProps()}>
+            <thead>
+              {headerGroups.map((headerGroup) => {
+                return (
+                  <tr {...headerGroup.getHeaderGroupProps()}>
+                    {headerGroup.headers.map((column) => {
+                      return (
+                        <th {...column.getHeaderProps()}>
+                          {column.render("Header")}
+                        </th>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </thead>
+            <tbody {...getTableBodyProps()}>
+              {page.map((row) => {
+                prepareRow(row);
+                return (
+                  <tr {...row.getRowProps()}>
+                    {row.cells.map((cell) => (
+                      <td {...cell.getCellProps()}>{cell.render("Cell")}</td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
           <div className="table-footer">
             <span>
               Page{" "}
@@ -109,18 +123,19 @@ const Table = ({selectedMenu}) => {
                 {pageIndex + 1} of {pageOptions.length}
               </strong>
             </span>
-            <div className='footer-buttons'>
+            <div className="footer-buttons">
               <button
-                className='button'
+                className="button"
                 disabled={!canPreviousPage}
                 onClick={() => previousPage()}
               >
                 Pre
               </button>
               <button
-                className='button'
-               disabled={!canNextPage} 
-               onClick={() => nextPage()}>
+                className="button"
+                disabled={!canNextPage}
+                onClick={() => nextPage()}
+              >
                 Next
               </button>
             </div>
@@ -132,10 +147,11 @@ const Table = ({selectedMenu}) => {
                 filename="tablexls"
                 sheet="tablexls"
                 buttonText="Export as xls"
-                />
+              />
             </div>
-            </div>
-      </>}
+          </div>
+        </>
+      )}
     </div>
   );
 };

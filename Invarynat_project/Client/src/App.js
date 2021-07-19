@@ -1,10 +1,10 @@
-import './App.css';
-import Pagination from './components/Pagination';
+import "./App.css";
+import Table from "./components/Table";
 
 function App() {
   return (
     <div className="App">
-     <Pagination />
+      <Table />
     </div>
   );
 }
