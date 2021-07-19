@@ -109,27 +109,18 @@ router.get("/getPersonData", async function (req, res) {
           });
 
         if (DiagnosesPointers[VALUE]) {
-          const { pointerkey, pointerValue, riskCategory } =
+          const { pointerkey, pointerValue, riskCategory, riskFactor } =
             DiagnosesPointers[VALUE];
           if (!visit[pointerkey]) {
             visit[pointerkey] = pointerValue || "Yes";
             riskCategory && (visit["Risk_Cat"] = riskCategory);
+
+            if (riskFactor) {
+              Object.keys(riskFactor).forEach((factor) => {
+                visit["Risk_Factor"][factor] += 1;
+              });
+            }
           }
-        } else if (
-          VALUE == "O99.419" &&
-          !visit["History_of_cardiovascular_disease"]
-        ) {
-          visit["History_of_cardiovascular_disease"] = "Yes";
-          visit["Risk_Cat"] = "RED";
-        } else if (VALUE == "R60.9") {
-          visit["Swelling_in_face_or_hands"] = "Yes";
-          // Not sure need to confirm
-          //visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "R06.02" && !visit["Shortness_of_breath_at_rest"]) {
-          visit["Shortness_of_breath_at_rest"] = "Yes";
-          visit["Risk_Cat"] = "RED";
-          // Not sure need to confirm
-          // visit["Risk_Factor"]["Symptoms"] += 1;
         } else if (
           VALUE == "R06.01" &&
           EVENT_DESC.includes("Severe orthopnea") &&
@@ -144,17 +135,7 @@ router.get("/getPersonData", async function (req, res) {
         //   visit["Mild_orthopnea"] = "Yes";
         //   visit["Risk_Factor"]["Symptoms"] += 1;
         // }
-        else if (VALUE == "R06.00" && !visit["Dyspnea"]) {
-          visit["Dyspnea"] = "Yes";
-          visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "R06.82" && !visit["Tachypnea"]) {
-          visit["Tachypnea"] = "Yes";
-          visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE == "R51") {
-          visit["New_or_worsening_headache"] = "Yes";
-          // Not sure need to confirm
-          //visit["Risk_Factor"]["Symptoms"] += 1;
-        } else if (VALUE.includes("J45") && !visit["Asthma_unresponsive"]) {
+        else if (VALUE.includes("J45") && !visit["Asthma_unresponsive"]) {
           visit["Asthma_unresponsive"] = "Yes";
           visit["Risk_Factor"]["Symptoms"] += 1;
         } else if (VALUE == "R07.9" && !visit["Chest_pain"]) {
@@ -347,9 +328,6 @@ router.get("/getPersonData", async function (req, res) {
           result.Risk_Cat == "RED" ||
           (result.Risk_Factor && result.Risk_Factor != "NA")
         ) {
-          preparedResult.push(result);
-          preparedResult.push(result);
-          preparedResult.push(result);
           preparedResult.push(result);
         }
       }
