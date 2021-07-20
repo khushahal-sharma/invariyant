@@ -155,6 +155,8 @@ const Table = () => {
                 <option value="R07.9">Chest pain</option>
                 <option value="R42','R55">Dizziness or syncope</option>
                 <option value="R01.1">Loud murmur heart</option>
+                <option value="E10','E11">Diabetes</option>
+                <option value="i10">Hypertension</option>
               </select>
               {/* <input type="submit" /> */}
             </span>

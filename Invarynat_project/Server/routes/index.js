@@ -263,7 +263,6 @@ router.get("/getPersonData", async function (req, res) {
           currentAge =
             (visitIDMap[visitId] || {}).CURRENT_AGE ||
             personDetails.CURRENT_AGE;
-
         const result = {
           PERSON_ID: personDetails.PERSON_ID,
           VISIT_ID: visitId,
