@@ -25,8 +25,9 @@ router.get("/testApi", function (req, res) {
 });
 
 router.get("/getPersonData", async function (req, res) {
-  // console.log(req.query.VALUE);
-  let VAL = req.query.VALUE;
+  // console.log(req.query);
+  let VAL = req.query.VALUE,
+    Person_ID = req.query.Person;
   try {
     await sql.connect(dbConfig.dbConnection());
     /* let result = await sql.query(
@@ -42,16 +43,23 @@ router.get("/getPersonData", async function (req, res) {
           systolic_BP: 'yes',
           vist_data: ""
         },
-        "233":{
+        "233":
         
         }
       }
     }}
      */
 
-    let result = await sql.query("SELECT Top 50 * FROM Person"),
+    let result = {},
       uniquePersonIllnes = {},
       personIdValues = "";
+    if (Person_ID) {
+      result = await sql.query(
+        `SELECT Top 50 * FROM Person WHERE PERSON_ID IN (${Person_ID})`
+      );
+    } else {
+      result = await sql.query(`SELECT Top 10 * FROM Person`);
+    }
     // Risk_Factor = {
     //   Symptoms: 0,
     //   Vitals_sign : 0,
@@ -142,21 +150,12 @@ router.get("/getPersonData", async function (req, res) {
               });
             }
           }
-        } else if (
-          VALUE == "R06.01" &&
-          EVENT_DESC.includes("Severe orthopnea") &&
-          !visit["Severe_orthopnea"]
-        ) {
+        } else if (VALUE == "R06.01" && !visit["Severe_orthopnea"]) {
           visit["Severe_orthopnea"] = "Yes";
           visit["Risk_Cat"] = "RED";
           // Not sure need to confirm
           // visit["Risk_Factor"]["Symptoms"] += 1;
-        }
-        // else if (VALUE == "R06.01" && EVENT_DESC.includes("Mild orthopnea")) {
-        //   visit["Mild_orthopnea"] = "Yes";
-        //   visit["Risk_Factor"]["Symptoms"] += 1;
-        // }
-        else if (VALUE.includes("E10") || VALUE.includes("E11")) {
+        } else if (VALUE.includes("E10") || VALUE.includes("E11")) {
           if (!visit["Pre_pregnancy_diagnosis_of_diabetes"]) {
             visit["Pre_pregnancy_diagnosis_of_diabetes"] = "Yes";
             visit["Risk_Factor"]["RiskFactor"] += 1;

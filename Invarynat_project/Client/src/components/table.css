@@ -54,6 +54,12 @@ tfoot td {
   display: flex;
   justify-content: space-around;
 }
+.form {
+  display: flex;
+}
+.form_input {
+  height: 25px;
+}
 .footer-buttons {
   display: flex;
   justify-content: space-between;

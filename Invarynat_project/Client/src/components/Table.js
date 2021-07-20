@@ -8,7 +8,8 @@ const Table = () => {
   const [loading, setLoading] = useState(true);
   const [mockData, setMockData] = useState([]);
   const [makeColumns, setMakeColumns] = useState([]);
-  const [selectedValue, setSelectedValue] = useState("");
+  const [inputValue, setInputValue] = useState("");
+  const [search, setSearch] = useState(true);
 
   let tableInstance,
     getTableProps,
@@ -25,7 +26,7 @@ const Table = () => {
 
   useEffect(() => {
     const url = `http://127.0.0.1:7000/getPersonData${
-      selectedValue && `?VALUE=${selectedValue}`
+      inputValue && `?Person=${inputValue}`
     }`;
     const fetchData = async () => {
       try {
@@ -54,7 +55,7 @@ const Table = () => {
       }
     };
     fetchData();
-  }, [selectedValue]);
+  }, [search]);
 
   let columns = useMemo(() => makeColumns, [mockData]),
     data = useMemo(() => mockData, [mockData]);
@@ -84,7 +85,11 @@ const Table = () => {
     state,
   } = tableInstance);
 
-  const { pageIndex } = state;
+  const { pageIndex } = state,
+    submit = (e) => {
+      e.preventDefault();
+      setSearch(!search);
+    };
 
   return (
     <div className="table">
@@ -131,33 +136,18 @@ const Table = () => {
               </strong>
             </span>
             <span>
-              <label htmlFor="diseases">Select a diseases </label>
-              <select
-                defaultValue={selectedValue}
-                onChange={(e) => setSelectedValue(e.target.value)}
-                name="diseases"
-                id="list"
-              >
-                <option value="">None</option>
-                <option value="O99.419">Cardiac Diseases</option>
-                <option value="R06.02">Shortness of breath</option>
-                <option value="R06.01">Severe orthopnea</option>
-                {/* <option value="heart rate">Resting HR</option> */}
-                {/* <option value="102225120">Resting Systolic BP</option> */}
-                {/* <option value="R09.02">Oxygen saturation</option> */}
-                {/* <option value="Respiratory rate">Respiratory rate</option> */}
-                <option value="R00.2">Palipitations</option>
-                {/* <option value="R60.9">Swelling</option> */}
-                <option value="R06.00">Dyspnea</option>
-                <option value="R06.82">Tachypnea</option>
-                <option value="R51">New/Worsening headache</option>
-                <option value="J45">Asthma unresponsive</option>
-                <option value="R07.9">Chest pain</option>
-                <option value="R42','R55">Dizziness or syncope</option>
-                <option value="R01.1">Loud murmur heart</option>
-                <option value="E10','E11">Diabetes</option>
-                <option value="i10">Hypertension</option>
-              </select>
+              <form className="form" action="" onSubmit={submit}>
+                <label htmlFor="personID"></label>
+                <input
+                  className="form_input"
+                  name="personID"
+                  type="text"
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Person ID"
+                  value={inputValue}
+                />
+                <input type="submit" />
+              </form>
               {/* <input type="submit" /> */}
             </span>
             <div className="footer-buttons">
