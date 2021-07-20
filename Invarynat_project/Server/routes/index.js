@@ -25,6 +25,8 @@ router.get("/testApi", function (req, res) {
 });
 
 router.get("/getPersonData", async function (req, res) {
+  // console.log(req.query.VALUE);
+  let VAL = req.query.VALUE;
   try {
     await sql.connect(dbConfig.dbConnection());
     /* let result = await sql.query(
@@ -73,16 +75,35 @@ router.get("/getPersonData", async function (req, res) {
       }
     );
 
-    let EventResult = await sql.query(
-      `SELECT * FROM Events Where PERSON_ID IN (${personIdValues})`
-    );
+    let EventResult = {},
+      DiagnosesResult = {},
+      visitResult = {};
 
-    let visitResult = await sql.query(
-      `SELECT * FROM Visits Where PERSON_ID IN (${personIdValues})`
-    );
-    let DiagnosesResult = await sql.query(
-      `SELECT * FROM Diagnoses Where PERSON_ID IN (${personIdValues})`
-    );
+    if (VAL) {
+      DiagnosesResult = await sql.query(
+        `SELECT * FROM Diagnoses Where PERSON_ID IN (${personIdValues}) and VALUE IN ('${VAL}')`
+      );
+      EventResult = await sql.query(
+        `SELECT * from Events where PERSON_ID IN (${personIdValues}) and EVENT_CD IN ('${VAL}')`
+      );
+      EventResult = await sql.query(
+        `SELECT * from Events where PERSON_ID IN (${personIdValues}) and EVENT_DESC IN ('${VAL}')`
+      );
+    } else {
+      EventResult = await sql.query(
+        `SELECT * FROM Events Where PERSON_ID IN (${personIdValues})`
+      );
+
+      visitResult = await sql.query(
+        `SELECT * FROM Visits Where PERSON_ID IN (${personIdValues})`
+      );
+      DiagnosesResult = await sql.query(
+        `SELECT * FROM Diagnoses Where PERSON_ID IN (${personIdValues})`
+      );
+    }
+
+    // console.log("DIA", DiagnosesResult);
+    // console.log("event", EventResult);
 
     //preapare Visit map with details.
     let visitIDMap = {};
@@ -135,7 +156,7 @@ router.get("/getPersonData", async function (req, res) {
         //   visit["Mild_orthopnea"] = "Yes";
         //   visit["Risk_Factor"]["Symptoms"] += 1;
         // }
-         else if (VALUE.includes("E10") || VALUE.includes("E11")) {
+        else if (VALUE.includes("E10") || VALUE.includes("E11")) {
           if (!visit["Pre_pregnancy_diagnosis_of_diabetes"]) {
             visit["Pre_pregnancy_diagnosis_of_diabetes"] = "Yes";
             visit["Risk_Factor"]["RiskFactor"] += 1;

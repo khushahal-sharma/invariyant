@@ -8,6 +8,7 @@ const Table = () => {
   const [loading, setLoading] = useState(true);
   const [mockData, setMockData] = useState([]);
   const [makeColumns, setMakeColumns] = useState([]);
+  const [selectedValue, setSelectedValue] = useState("");
 
   let tableInstance,
     getTableProps,
@@ -23,8 +24,9 @@ const Table = () => {
     state;
 
   useEffect(() => {
-    const url = `http://127.0.0.1:7000/getPersonData`;
-
+    const url = `http://127.0.0.1:7000/getPersonData${
+      selectedValue && `?VALUE=${selectedValue}`
+    }`;
     const fetchData = async () => {
       try {
         const response = await fetch(url);
@@ -52,7 +54,7 @@ const Table = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [selectedValue]);
 
   let columns = useMemo(() => makeColumns, [mockData]),
     data = useMemo(() => mockData, [mockData]);
@@ -127,6 +129,34 @@ const Table = () => {
               <strong>
                 {pageIndex + 1} of {pageOptions.length}
               </strong>
+            </span>
+            <span>
+              <label htmlFor="diseases">Select a diseases </label>
+              <select
+                defaultValue={selectedValue}
+                onChange={(e) => setSelectedValue(e.target.value)}
+                name="diseases"
+                id="list"
+              >
+                <option value="">None</option>
+                <option value="O99.419">Cardiac Diseases</option>
+                <option value="R06.02">Shortness of breath</option>
+                <option value="R06.01">Severe orthopnea</option>
+                {/* <option value="heart rate">Resting HR</option> */}
+                {/* <option value="102225120">Resting Systolic BP</option> */}
+                <option value="R09.02">Oxygen saturation</option>
+                {/* <option value="Respiratory rate">Respiratory rate</option> */}
+                <option value="R00.2">Palipitations</option>
+                <option value="R60.9">Swelling</option>
+                <option value="R06.00">Dyspnea</option>
+                <option value="R06.82">Tachypnea</option>
+                <option value="R51">New/Worsening headache</option>
+                <option value="J45">Asthma unresponsive</option>
+                <option value="R07.9">Chest pain</option>
+                <option value="R42','R55">Dizziness or syncope</option>
+                <option value="R01.1">Loud murmur heart</option>
+              </select>
+              {/* <input type="submit" /> */}
             </span>
             <div className="footer-buttons">
               <button
