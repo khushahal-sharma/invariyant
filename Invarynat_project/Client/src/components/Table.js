@@ -144,10 +144,10 @@ const Table = () => {
                 <option value="R06.01">Severe orthopnea</option>
                 {/* <option value="heart rate">Resting HR</option> */}
                 {/* <option value="102225120">Resting Systolic BP</option> */}
-                <option value="R09.02">Oxygen saturation</option>
+                {/* <option value="R09.02">Oxygen saturation</option> */}
                 {/* <option value="Respiratory rate">Respiratory rate</option> */}
                 <option value="R00.2">Palipitations</option>
-                <option value="R60.9">Swelling</option>
+                {/* <option value="R60.9">Swelling</option> */}
                 <option value="R06.00">Dyspnea</option>
                 <option value="R06.82">Tachypnea</option>
                 <option value="R51">New/Worsening headache</option>
