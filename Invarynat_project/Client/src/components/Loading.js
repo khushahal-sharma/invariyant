@@ -8,7 +8,7 @@ const Loading = () => {
             <div>    
             <Circles fill='#ccc' />
             {/* <Rings fill='#ccc' /> */}
-            </div>
+            </div> 
         </div>
     )
 }
