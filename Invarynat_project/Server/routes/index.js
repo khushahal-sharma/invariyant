@@ -25,7 +25,6 @@ router.get("/testApi", function (req, res) {
 });
 
 router.get("/getPersonData", async function (req, res) {
-  // console.log(req.query);
   let VAL = req.query.VALUE,
     Person_ID = req.query.Person;
   try {
@@ -53,12 +52,18 @@ router.get("/getPersonData", async function (req, res) {
     let result = {},
       uniquePersonIllnes = {},
       personIdValues = "";
+    
     if (Person_ID) {
+      let preparePersonIds = '';
+      Person_ID.split(',').forEach((id, index) => {
+        preparePersonIds += `${index > 0 ? ',' : ''}` + id;
+      });
+     
       result = await sql.query(
-        `SELECT Top 50 * FROM Person WHERE PERSON_ID IN (${Person_ID})`
+        `SELECT Top 50 * FROM Person WHERE PERSON_ID IN (${preparePersonIds})`
       );
     } else {
-      result = await sql.query(`SELECT Top 10 * FROM Person`);
+      result = await sql.query(`SELECT Top 100 * FROM Person`);
     }
     // Risk_Factor = {
     //   Symptoms: 0,
@@ -98,7 +103,9 @@ router.get("/getPersonData", async function (req, res) {
         `SELECT * from Events where PERSON_ID IN (${personIdValues}) and EVENT_DESC IN ('${VAL}')`
       );
     } else {
-      EventResult = await sql.query(
+
+      if (personIdValues.length) {
+           EventResult = await sql.query(
         `SELECT * FROM Events Where PERSON_ID IN (${personIdValues})`
       );
 
@@ -108,10 +115,8 @@ router.get("/getPersonData", async function (req, res) {
       DiagnosesResult = await sql.query(
         `SELECT * FROM Diagnoses Where PERSON_ID IN (${personIdValues})`
       );
+      }
     }
-
-    // console.log("DIA", DiagnosesResult);
-    // console.log("event", EventResult);
 
     //preapare Visit map with details.
     let visitIDMap = {};
@@ -171,14 +176,17 @@ router.get("/getPersonData", async function (req, res) {
     });
 
     (EventResult.recordset || []).forEach((item) => {
-      const {
+      let {
         EVNET_ID,
         PERSON_ID,
         VISIT_ID,
         EVENT_CD,
         RESULT_VAL,
-        EVENT_DESC,
+        EVENT_DESC = '',
       } = item;
+
+      EVENT_DESC = EVENT_DESC.toLowerCase();
+
       if (uniquePersonIllnes[PERSON_ID]) {
         // Add Visit_ID wise data to each person.
         !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] &&
@@ -239,7 +247,7 @@ router.get("/getPersonData", async function (req, res) {
               visit["Risk_Factor"]["Vitals_sign"] += 1;
             }
           }
-        } else if (EVENT_DESC.includes("Respiratory rate")) {
+        } else if (EVENT_DESC.includes("respiratory rate")) {
           if (!visit["Respiratory_rate"]) {
             visit["Respiratory_rate"] = RESULT_VAL;
             if (RESULT_VAL >= 30) {
