@@ -54,11 +54,17 @@ router.get("/getPersonData", async function (req, res) {
       personIdValues = "";
     
     if (Person_ID) {
+      let checkPreparedPersonId='' ;
+      console.log('Person_ID',Person_ID)
       let preparePersonIds = '';
       Person_ID.split(',').forEach((id, index) => {
         preparePersonIds += `${index > 0 ? ',' : ''}` + id;
+        checkPreparedPersonId+=id
       });
-     
+   
+      if(isNaN(checkPreparedPersonId.trim(''))){
+        return
+      }
       result = await sql.query(
         `SELECT Top 50 * FROM Person WHERE PERSON_ID IN (${preparePersonIds})`
       );
@@ -247,6 +253,34 @@ router.get("/getPersonData", async function (req, res) {
               visit["Risk_Factor"]["Vitals_sign"] += 1;
             }
           }
+          else if(visit["Resting_HR"]){
+         
+            if(visit["Resting_HR"]<RESULT_VAL){
+              if(RESULT_VAL>=120){
+                if(visit["Resting_HR"]>=120){
+                  visit["Resting_HR"] = RESULT_VAL;
+                }
+                else{
+                  visit["Resting_HR"] = RESULT_VAL;
+                  visit["Risk_Cat"] = "RED";
+                  visit["Risk_Factor"]["Vitals_sign"] -= 1;
+                }
+             
+              } else if (RESULT_VAL >= 110) {
+                if(visit["Resting_HR"]>=110){
+                  visit["Resting_HR"] = RESULT_VAL;
+                }
+                else{
+                   visit["Resting_HR"] = RESULT_VAL;
+                visit["Risk_Factor"]["Vitals_sign"] 
+                += 1;
+                }
+              }
+              else{
+                visit["Resting_HR"] = RESULT_VAL;
+              }
+            }
+          }
         } else if (EVENT_DESC.includes("respiratory rate")) {
           if (!visit["Respiratory_rate"]) {
             visit["Respiratory_rate"] = RESULT_VAL;
@@ -254,6 +288,34 @@ router.get("/getPersonData", async function (req, res) {
               visit["Risk_Cat"] = "RED";
             } else if (RESULT_VAL >= 24) {
               visit["Risk_Factor"]["Vitals_sign"] += 1;
+            }
+          }
+          else if(visit["Respiratory_rate"]){
+         
+            if(visit["Respiratory_rate"]<RESULT_VAL){
+              if(RESULT_VAL>=30){
+                if(visit["Respiratory_rate"]>=30){
+                  visit["Respiratory_rate"] = RESULT_VAL;
+                }
+                else{
+                  visit["Respiratory_rate"] = RESULT_VAL;
+                  visit["Risk_Cat"] = "RED";
+                  visit["Risk_Factor"]["Vitals_sign"] -= 1;
+                }
+             
+              } else if (RESULT_VAL >= 24) {
+                if(visit["Respiratory_rate"]>=24){
+                  visit["Respiratory_rate"] = RESULT_VAL;
+                }
+                else{
+                   visit["Respiratory_rate"] = RESULT_VAL;
+                visit["Risk_Factor"]["Vitals_sign"] 
+                += 1;
+                }
+              }
+              else{
+                visit["Respiratory_rate"] = RESULT_VAL;
+              }
             }
           }
         }
