@@ -7,7 +7,7 @@ const Loading = () => {
         <div className="loading-overlay">
             <div>    
             <Circles fill='#ccc' />
-            {/* <Rings fill='#ccc' /> */}
+            {/* <Rings fill='#ccc' /> */} 
             </div>
         </div>
     )
