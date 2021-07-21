@@ -6,7 +6,7 @@ const Loading = () => {
     return (
         <div className="loading-overlay">
             <div>    
-            <Circles fill='#ccc' />
+            <Circles fill='#ccc' /> 
             {/* <Rings fill='#ccc' /> */}
               </div> 
         </div>
