@@ -59,10 +59,12 @@ router.get("/getPersonData", async function (req, res) {
       let preparePersonIds = '';
       Person_ID.split(',').forEach((id, index) => {
         preparePersonIds += `${index > 0 ? ',' : ''}` + id;
-        checkPreparedPersonId+=id
+        checkPreparedPersonId=isNaN(id)
+        
       });
+   //   console.log('checkPreparedPersonId',typeof(checkPreparedPersonId),checkPreparedPersonId,checkPreparedPersonId.includes(isNaN()))
    
-      if(isNaN(checkPreparedPersonId.trim(''))){
+      if(checkPreparedPersonId){
         return
       }
       result = await sql.query(
@@ -260,10 +262,15 @@ router.get("/getPersonData", async function (req, res) {
                 if(visit["Resting_HR"]>=120){
                   visit["Resting_HR"] = RESULT_VAL;
                 }
-                else{
+                else if(visit["Resting_HR"]>=110){
                   visit["Resting_HR"] = RESULT_VAL;
                   visit["Risk_Cat"] = "RED";
                   visit["Risk_Factor"]["Vitals_sign"] -= 1;
+                }
+                else{
+                  visit["Resting_HR"] = RESULT_VAL;
+                  visit["Risk_Cat"] = "RED";
+           
                 }
              
               } else if (RESULT_VAL >= 110) {
@@ -297,10 +304,15 @@ router.get("/getPersonData", async function (req, res) {
                 if(visit["Respiratory_rate"]>=30){
                   visit["Respiratory_rate"] = RESULT_VAL;
                 }
-                else{
+                else if(visit["Respiratory_rate"]>=24){
                   visit["Respiratory_rate"] = RESULT_VAL;
                   visit["Risk_Cat"] = "RED";
                   visit["Risk_Factor"]["Vitals_sign"] -= 1;
+                }
+                else{
+                  visit["Respiratory_rate"] = RESULT_VAL;
+                  visit["Risk_Cat"] = "RED";
+
                 }
              
               } else if (RESULT_VAL >= 24) {
