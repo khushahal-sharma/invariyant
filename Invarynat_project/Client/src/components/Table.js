@@ -25,6 +25,7 @@ const Table = () => {
     state;
 
   useEffect(() => {
+    setLoading(true);
     const url = `http://127.0.0.1:7000/getPersonData${
       inputValue && `?Person=${inputValue}`
     }`;
