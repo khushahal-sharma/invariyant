@@ -55,25 +55,23 @@ router.get("/getPersonData", async function (req, res) {
 
     if (Person_ID) {
       let checkPreparedPersonId = false;
-      console.log("Person_ID", Person_ID);
       let preparePersonIds = "";
 
       Person_ID.split(",").forEach((id, index) => {
         preparePersonIds += `${index > 0 ? "," : ""}` + id;
-
         isNaN(id) && (checkPreparedPersonId = true);
       });
-      //   console.log('checkPreparedPersonId',typeof(checkPreparedPersonId),checkPreparedPersonId,checkPreparedPersonId.includes(isNaN()))
 
       if (checkPreparedPersonId) {
         console.log(" Error: Person ID is not in Integer formate");
        return res.json({ error: "Error: Person ID is not in Integer formate" });  
       }
+      
       result = await sql.query(
         `SELECT Top 50 * FROM Person WHERE PERSON_ID IN (${preparePersonIds})`
       );
     } else {
-      result = await sql.query(`SELECT Top 100 * FROM Person`);
+      result = await sql.query(`SELECT Top 10 * FROM Person`);
     }
     // Risk_Factor = {
     //   Symptoms: 0,
