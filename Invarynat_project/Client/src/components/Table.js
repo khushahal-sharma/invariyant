@@ -10,6 +10,7 @@ const Table = () => {
   const [makeColumns, setMakeColumns] = useState([]);
   const [inputValue, setInputValue] = useState("");
   const [search, setSearch] = useState(true);
+  const [error, setError] = useState({});
 
   let tableInstance,
     getTableProps,
@@ -33,8 +34,13 @@ const Table = () => {
       try {
         const response = await fetch(url);
         const updatedData = await response.json();
-        // console.log(" updated data ", updatedData);
-        if (updatedData.data) {
+         console.log(" updated data ", updatedData);
+
+        if (updatedData.error) {
+          setLoading(false);
+          setError({ errorMessage: "Somthing went wrong.Try reloading" });
+          return;
+        } else if (updatedData.data) {
           let keys = Object.keys(updatedData.data[0] || {});
           let prepareCol = [];
           keys.map((key) => {
@@ -46,6 +52,7 @@ const Table = () => {
           setMakeColumns(prepareCol);
           setMockData(updatedData.data);
           setLoading(false);
+          setError({});
         }
       } catch (error) {
         console.log("error", error);
@@ -96,7 +103,8 @@ const Table = () => {
     <div className="table">
       {loading ? (
         <Loading />
-      ) : (
+      ) : error.errorMessage ? (<h2>Somthing went wrong.Try reloading</h2>):
+        (
         <>
           <div className="table_items">
             <table id="table-to-xls" {...getTableProps()}>
