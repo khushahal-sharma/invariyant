@@ -7,6 +7,9 @@ const DiagnosesPointers = {
   "R60.9": {
     pointerkey: "Swelling_in_face_or_hands",
     pointerValue: "Yes",
+    riskFactor: {
+      Symptoms: 1,
+    },
   },
   "R06.02": {
     pointerkey: "Shortness_of_breath_at_rest",

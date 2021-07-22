@@ -64,11 +64,13 @@ router.get("/getPersonData", async function (req, res) {
 
       if (checkPreparedPersonId) {
         console.log(" Error: Person ID is not in Integer formate");
-       return res.json({ error: "Error: Person ID is not in Integer formate" });  
+        return res.json({
+          error: "Error: Person ID is not in Integer formate",
+        });
       }
-      
+
       result = await sql.query(
-        `SELECT Top 50 * FROM Person WHERE PERSON_ID IN (${preparePersonIds})`
+        `SELECT * FROM Person WHERE PERSON_ID IN (${preparePersonIds})`
       );
     } else {
       result = await sql.query(`SELECT Top 10 * FROM Person`);
@@ -124,7 +126,6 @@ router.get("/getPersonData", async function (req, res) {
         );
       }
     }
-
     //preapare Visit map with details.
     let visitIDMap = {};
     (visitResult.recordset || []).forEach((item) => {
@@ -193,6 +194,7 @@ router.get("/getPersonData", async function (req, res) {
       } = item;
 
       EVENT_DESC = EVENT_DESC.toLowerCase();
+      RESULT_VAL = Number(RESULT_VAL);
 
       if (uniquePersonIllnes[PERSON_ID]) {
         // Add Visit_ID wise data to each person.
@@ -417,7 +419,6 @@ router.get("/getPersonData", async function (req, res) {
         }
       }
     }
-
     res.json({ data: preparedResult });
   } catch (err) {
     console.log("Error in query ", err);
