@@ -355,35 +355,35 @@ router.get("/getPersonData", async function (req, res) {
           // VISIT_TYPE: (visitIDMap[visitId] || {}).VISIT_TYPE || "",
           // REG_DAYS_FROM_INDEX:
           //   (visitIDMap[visitId] || {}).REG_DAYS_FROM_INDEX || "",
-          Risk_Cat: visitDetail.Risk_Cat || "NA",
+          Risk_Cat: visitDetail.Risk_Cat || "--",
           Risk_Factor: 0,
           History_of_cardiovascular_disease:
-            visitDetail.History_of_cardiovascular_disease || "NA",
+            visitDetail.History_of_cardiovascular_disease || "--",
           Shortness_of_breath_at_rest:
-            visitDetail.Shortness_of_breath_at_rest || "NA",
-          Severe_orthopnea: visitDetail.Severe_orthopnea || "NA",
-          Resting_HR: visitDetail.Resting_HR || "NA",
-          Resting_Systolic_BP: visitDetail.Resting_Systolic_BP || "NA",
-          Oxygen_saturation: visitDetail.Oxygen_saturation || "NA",
-          Respiratory_rate: visitDetail.Respiratory_rate || "NA",
+            visitDetail.Shortness_of_breath_at_rest || "--",
+          Severe_orthopnea: visitDetail.Severe_orthopnea || "--",
+          Resting_HR: visitDetail.Resting_HR || "--",
+          Resting_Systolic_BP: visitDetail.Resting_Systolic_BP || "--",
+          Oxygen_saturation: visitDetail.Oxygen_saturation || "--",
+          Respiratory_rate: visitDetail.Respiratory_rate || "--",
           RACE: personDetails.RACE,
           Age: currentAge,
           Swelling_in_face_or_hands:
-            visitDetail.Swelling_in_face_or_hands || "NA",
-          Dyspnea: visitDetail.Dyspnea || "NA",
-          //Mild_orthopnea: visitDetail.Mild_orthopnea || "NA", removed till get full
-          Tachypnea: visitDetail.Tachypnea || "NA",
+            visitDetail.Swelling_in_face_or_hands || "--",
+          Dyspnea: visitDetail.Dyspnea || "--",
+          //Mild_orthopnea: visitDetail.Mild_orthopnea || "--", removed till get full
+          Tachypnea: visitDetail.Tachypnea || "--",
           New_or_worsening_headache:
-            visitDetail.New_or_worsening_headache || "NA",
-          Asthma_unresponsive: visitDetail.Asthma_unresponsive || "NA",
-          Palpitations: visitDetail.Palpitations || "NA",
-          Dizziness_or_syncope: visitDetail.Dizziness_or_syncope || "NA",
-          Chest_pain: visitDetail.Chest_pain || "NA",
-          Loud_murmur_heart: visitDetail.Loud_murmur_heart || "NA",
+            visitDetail.New_or_worsening_headache || "--",
+          Asthma_unresponsive: visitDetail.Asthma_unresponsive || "--",
+          Palpitations: visitDetail.Palpitations || "--",
+          Dizziness_or_syncope: visitDetail.Dizziness_or_syncope || "--",
+          Chest_pain: visitDetail.Chest_pain || "--",
+          Loud_murmur_heart: visitDetail.Loud_murmur_heart || "--",
           Pre_pregnancy_diagnosis_of_diabetes:
-            visitDetail.Pre_pregnancy_diagnosis_of_diabetes || "NA",
+            visitDetail.Pre_pregnancy_diagnosis_of_diabetes || "--",
           Pre_pregnancy_diagnosis_of_hypertension:
-            visitDetail.Pre_pregnancy_diagnosis_of_hypertension || "NA",
+            visitDetail.Pre_pregnancy_diagnosis_of_hypertension || "--",
         };
 
         if (currentAge >= 40) {
@@ -398,19 +398,19 @@ router.get("/getPersonData", async function (req, res) {
           const { Symptoms, Vitals_sign, RiskFactor, Physical_exam } =
             visitDetail.Risk_Factor;
           let totalRisk = Symptoms + RiskFactor + Vitals_sign + Physical_exam;
-          result.Risk_Factor = totalRisk || "NA";
+          result.Risk_Factor = totalRisk || "--";
           if (visitDetail.Risk_Cat !== "RED") {
             result.Risk_Cat =
               (Symptoms >= 1 && Vitals_sign >= 1 && RiskFactor >= 1) ||
               totalRisk >= 4
                 ? "RED"
-                : "NA";
+                : "--";
           }
         }
 
         if (
           result.Risk_Cat == "RED" ||
-          (result.Risk_Factor && result.Risk_Factor != "NA")
+          (result.Risk_Factor && result.Risk_Factor != "--")
         ) {
           preparedResult.push(result);
         }
