@@ -63,9 +63,9 @@ router.get("/getPersonData", async function (req, res) {
       });
 
       if (checkPreparedPersonId) {
-        console.log(" Error: Person ID is not in Integer formate");
+        console.log(" Error: Person ID is not in Integer format");
         return res.json({
-          error: "Error: Person ID is not in Integer formate",
+          error: "Error: Person ID is not in Integer format",
         });
       }
 
@@ -135,11 +135,12 @@ router.get("/getPersonData", async function (req, res) {
     });
 
     (DiagnosesResult.recordset || []).forEach((item) => {
-      const { VALUE, PERSON_ID, VISIT_ID, EVENT_DESC } = item;
+      let { VALUE, PERSON_ID, VISIT_ID, EVENT_DESC } = item;
       if (uniquePersonIllnes[PERSON_ID]) {
         !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] &&
           (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
 
+        VALUE = VALUE.toUpperCase();
         //use refrential variable
         let visit = uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID];
         !visit["Risk_Factor"] &&
@@ -174,7 +175,7 @@ router.get("/getPersonData", async function (req, res) {
             visit["Risk_Factor"]["RiskFactor"] += 1;
           }
         } else if (
-          VALUE.includes("i10") &&
+          VALUE.includes("I10") &&
           !visit["Pre_pregnancy_diagnosis_of_hypertension"]
         ) {
           visit["Pre_pregnancy_diagnosis_of_hypertension"] = "Yes";
@@ -193,6 +194,7 @@ router.get("/getPersonData", async function (req, res) {
         EVENT_DESC = "",
       } = item;
 
+      EVENT_CD = Number(EVENT_CD);
       EVENT_DESC = EVENT_DESC.toLowerCase();
       RESULT_VAL = Number(RESULT_VAL);
 
@@ -392,7 +394,8 @@ router.get("/getPersonData", async function (req, res) {
         if (currentAge >= 40) {
           visitDetail.Risk_Factor.RiskFactor += 1;
         }
-        if (personDetails.RACE == "African American") {
+
+        if (personDetails.RACE.toLowerCase() == "african american") {
           visitDetail.Risk_Factor.RiskFactor += 1;
         }
         //  calculating risk category and risk factor count
@@ -401,6 +404,7 @@ router.get("/getPersonData", async function (req, res) {
           const { Symptoms, Vitals_sign, RiskFactor, Physical_exam } =
             visitDetail.Risk_Factor;
           let totalRisk = Symptoms + RiskFactor + Vitals_sign + Physical_exam;
+          // console.log('Symptoms',Symptoms,"RiskFactor",RiskFactor,"VitalSign", Vitals_sign,"Physical exam",Physical_exam);
           result.Risk_Factor = totalRisk || "--";
           if (visitDetail.Risk_Cat !== "RED") {
             result.Risk_Cat =

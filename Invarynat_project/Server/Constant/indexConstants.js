@@ -15,6 +15,9 @@ const DiagnosesPointers = {
     pointerkey: "Shortness_of_breath_at_rest",
     pointerValue: "Yes",
     riskCategory: "RED",
+    // riskFactor: {
+    //   Symptoms: 1,
+    // },
     // Not sure need to confirm
     // visit["Risk_Factor"]["Symptoms"] += 1;
   },
@@ -35,6 +38,9 @@ const DiagnosesPointers = {
   "R51": {
     pointerkey: "New_or_worsening_headache",
     pointerValue: "Yes",
+    riskFactor: {
+      Symptoms: 1,
+    },
     // Not sure need to confirm
     //visit["Risk_Factor"]["Symptoms"] += 1;
   },

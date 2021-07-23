@@ -34,7 +34,7 @@ const Table = () => {
       try {
         const response = await fetch(url);
         const updatedData = await response.json();
-         console.log(" updated data ", updatedData);
+        console.log(" updated data ", updatedData);
 
         if (updatedData.error) {
           setLoading(false);
@@ -52,7 +52,6 @@ const Table = () => {
           setMakeColumns(prepareCol);
           setMockData(updatedData.data);
           setLoading(false);
-          setError({});
         }
       } catch (error) {
         console.log("error", error);
@@ -103,8 +102,9 @@ const Table = () => {
     <div className="table">
       {loading ? (
         <Loading />
-      ) : error.errorMessage ? (<h2>Somthing went wrong.Try reloading</h2>):
-        (
+      ) : error.errorMessage ? (
+        <h2>Somthing went wrong.Try reloading</h2>
+      ) : (
         <>
           <div className="table_items">
             <table id="table-to-xls" {...getTableProps()}>
@@ -138,13 +138,13 @@ const Table = () => {
             </table>
           </div>
           <div className="table-footer">
-            <span>
+            <span style={{ padding: "5px 0" }}>
               Page{" "}
               <strong>
                 {pageIndex + 1} of {pageOptions.length}
               </strong>
             </span>
-            <span>
+            <span style={{ flexGrow: "0.3" }}>
               <form className="form" action="" onSubmit={submit}>
                 <label htmlFor="personID"></label>
                 <input
