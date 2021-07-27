@@ -52,6 +52,7 @@ const Table = () => {
           setMakeColumns(prepareCol);
           setMockData(updatedData.data);
           setLoading(false);
+          setError({});
         }
       } catch (error) {
         console.log("error", error);

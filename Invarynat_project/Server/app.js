@@ -7,8 +7,10 @@ const debug = require("debug"),
   cookieParser = require("cookie-parser");
 
 const routes = require("./routes/index"),
-  users = require("./routes/users");
+  users = require("./routes/users"),
+  dumpTable = require("./routes/dumpTable");
 
+// /prepareDataset
 const app = express();
 
 app.use(logger("dev"));
@@ -27,6 +29,7 @@ app.use((req, res, next) => {
 });
 app.use("/", routes);
 app.use("/users", users);
+app.use("/dumpTable", dumpTable);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
