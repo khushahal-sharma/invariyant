@@ -7,7 +7,7 @@ var dbConfig = require("../Database/dbConnection");
 
 const { DiagnosesPointers } = require("../Constant/indexConstants");
 
-router.get("/getDumpDataTable", async function (req, res) {
+router.get("/createTable", async function (req, res) {
   try {
     await sql.connect(dbConfig.dbConnection());
 
@@ -323,9 +323,8 @@ router.get("/getDumpDataTable", async function (req, res) {
     };
     let record = result.recordset;
     console.log("record", record);
-    // let values = await createTableFromPersonID(record);
-    for (let i = 0; i < record.length; i += 100) {
-      let recordSlice = record.slice(i, i + 100),
+    for (let i = 0; i < record.length; i += 2) {
+      let recordSlice = record.slice(i, i + 2),
         values = await createTableFromPersonID(recordSlice);
       console.log("slice", recordSlice);
       console.log("values", values);
@@ -397,12 +396,13 @@ router.get("/getDumpDataTable", async function (req, res) {
         // ... error checks
         if (err) {
           console.log("error", err);
+          // res.json({ error: err });
         } else {
-          console.log(result);
+          // console.log(result);
         }
       });
     }
-    res.json({ data: "SUCCESS" });
+    res.json({ data: "Table created in DB" });
   } catch (err) {
     console.log("Error in query ", err);
   }
