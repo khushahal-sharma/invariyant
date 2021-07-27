@@ -7,12 +7,14 @@ var dbConfig = require("../Database/dbConnection");
 
 const { DiagnosesPointers } = require("../Constant/indexConstants");
 
-router.get("/createTable", async function (req, res) {
+router.get("/runPersonApi", async function (req, res) {
   try {
     await sql.connect(dbConfig.dbConnection());
 
     let result = {};
-    result = await sql.query(`SELECT PERSON_ID,CURRENT_AGE,RACE FROM Person`);
+    result = await sql.query(
+      `SELECT top 100 PERSON_ID,CURRENT_AGE,RACE  FROM Person`
+    );
 
     const createTableFromPersonID = async (recordSlice) => {
       let uniquePersonIllnes = {},
@@ -322,11 +324,11 @@ router.get("/createTable", async function (req, res) {
       return preparedResult;
     };
     let record = result.recordset;
-    console.log("record", record);
-    for (let i = 0; i < record.length; i += 2) {
-      let recordSlice = record.slice(i, i + 2),
+    // console.log("record", record);
+    for (let i = 0; i < record.length; i += 10) {
+      let recordSlice = record.slice(i, i + 10),
         values = await createTableFromPersonID(recordSlice);
-      console.log("slice", recordSlice);
+      // console.log("slice", recordSlice);
       console.log("values", values);
 
       const table = new sql.Table("VisitWisePersonDisease");
@@ -397,8 +399,8 @@ router.get("/createTable", async function (req, res) {
         if (err) {
           console.log("error", err);
           // res.json({ error: err });
-        } else {
-          // console.log(result);
+        } else if (result) {
+          console.log(result);
         }
       });
     }
