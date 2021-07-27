@@ -11,17 +11,13 @@ router.get("/getDumpDataTable", async function (req, res) {
   try {
     await sql.connect(dbConfig.dbConnection());
 
-    let result = {},
-      uniquePersonIllnes = {},
-      personIdValues = "",
-      preparedResult = [];
-
+    let result = {};
     result = await sql.query(`SELECT PERSON_ID,CURRENT_AGE,RACE FROM Person`);
 
-    let record = result.recordset;
-    const createTableFromPersonID = async (record) => {
-      let recordSlice = record;
-
+    const createTableFromPersonID = async (recordSlice) => {
+      let uniquePersonIllnes = {},
+        personIdValues = "",
+        preparedResult = [];
       // find unique persion id.
       (recordSlice || []).forEach(({ PERSON_ID, RACE, CURRENT_AGE } = {}) => {
         uniquePersonIllnes[PERSON_ID] = {
@@ -322,95 +318,91 @@ router.get("/getDumpDataTable", async function (req, res) {
           }
         }
       }
+      // console.log("result", preparedResult);
       return preparedResult;
     };
-    let values = await createTableFromPersonID(record);
-    // console.log(values);
-    const table = new sql.Table("VisitWisePersonDisease");
-    table.create = true;
-    table.columns.add("PERSON_ID", sql.BigInt, { nullable: false });
-    table.columns.add("VISIT_ID", sql.BigInt, { nullable: false });
-    // table.columns.add("VISIT_NUMBER", sql.BigInt, { nullable: false });
-    table.columns.add("Risk_Cat", sql.VarChar(50), { nullable: true });
-    table.columns.add("Risk_Factor", sql.SmallInt, { nullable: true });
-    table.columns.add("History_of_cardiovascular_disease", sql.VarChar(50), {
-      nullable: true,
-    });
-    table.columns.add("Shortness_of_breath_at_rest", sql.VarChar(50), {
-      nullable: true,
-    });
-    table.columns.add("Severe_orthopnea", sql.VarChar(50), { nullable: true });
-    table.columns.add("Resting_HR", sql.SmallInt, { nullable: true });
-    table.columns.add("Resting_Systolic_BP", sql.SmallInt, { nullable: true });
-    table.columns.add("Oxygen_saturation", sql.VarChar(50), { nullable: true });
-    table.columns.add("Respiratory_rate", sql.SmallInt, { nullable: true });
-    table.columns.add("RACE", sql.VarChar(50), { nullable: true });
-    table.columns.add("Age", sql.SmallInt, { nullable: true });
-    table.columns.add("Swelling_in_face_or_hands", sql.VarChar(50), {
-      nullable: true,
-    });
-    table.columns.add("Dyspnea", sql.VarChar(50), { nullable: true });
-    table.columns.add("Tachypnea", sql.VarChar(50), { nullable: true });
-    table.columns.add("New_or_worsening_headache", sql.VarChar(50), {
-      nullable: true,
-    });
-    table.columns.add("Asthma_unresponsive", sql.VarChar(50), {
-      nullable: true,
-    });
-    table.columns.add("Palpitations", sql.VarChar(50), { nullable: true });
-    table.columns.add("Dizziness_or_syncope", sql.VarChar(50), {
-      nullable: true,
-    });
-    table.columns.add("Chest_pain", sql.VarChar(50), { nullable: true });
-    table.columns.add("Loud_murmur_heart", sql.VarChar(50), { nullable: true });
-    table.columns.add("Pre_pregnancy_diagnosis_of_diabetes", sql.VarChar(50), {
-      nullable: true,
-    });
-    table.columns.add(
-      "Pre_pregnancy_diagnosis_of_hypertension",
-      sql.VarChar(50),
-      { nullable: true }
-    );
+    let record = result.recordset;
+    console.log("record", record);
+    // let values = await createTableFromPersonID(record);
+    for (let i = 0; i < record.length; i += 100) {
+      let recordSlice = record.slice(i, i + 100),
+        values = await createTableFromPersonID(recordSlice);
+      console.log("slice", recordSlice);
+      console.log("values", values);
 
-    values.forEach((value) => {
-      console.log(value);
-      table.rows.add(
-        value[0],
-        value[1],
-        value[2],
-        value[3],
-        value[4],
-        value[5],
-        value[6],
-        value[7],
-        value[8],
-        value[9],
-        value[10],
-        value[11],
-        value[12],
-        value[13],
-        value[14],
-        value[15],
-        value[16],
-        value[17],
-        value[18],
-        value[19],
-        value[20],
-        value[21],
-        value[22],
-        value[23]
+      const table = new sql.Table("VisitWisePersonDisease");
+      table.create = true;
+      table.columns.add("PERSON_ID", sql.BigInt, { nullable: false });
+      table.columns.add("VISIT_ID", sql.BigInt, { nullable: false });
+      // table.columns.add("VISIT_NUMBER", sql.BigInt, { nullable: false });
+      table.columns.add("Risk_Cat", sql.VarChar(50), { nullable: true });
+      table.columns.add("Risk_Factor", sql.SmallInt, { nullable: true });
+      table.columns.add("History_of_cardiovascular_disease", sql.VarChar(50), {
+        nullable: true,
+      });
+      table.columns.add("Shortness_of_breath_at_rest", sql.VarChar(50), {
+        nullable: true,
+      });
+      table.columns.add("Severe_orthopnea", sql.VarChar(50), {
+        nullable: true,
+      });
+      table.columns.add("Resting_HR", sql.SmallInt, { nullable: true });
+      table.columns.add("Resting_Systolic_BP", sql.SmallInt, {
+        nullable: true,
+      });
+      table.columns.add("Oxygen_saturation", sql.VarChar(50), {
+        nullable: true,
+      });
+      table.columns.add("Respiratory_rate", sql.SmallInt, { nullable: true });
+      table.columns.add("RACE", sql.VarChar(50), { nullable: true });
+      table.columns.add("Age", sql.SmallInt, { nullable: true });
+      table.columns.add("Swelling_in_face_or_hands", sql.VarChar(50), {
+        nullable: true,
+      });
+      table.columns.add("Dyspnea", sql.VarChar(50), { nullable: true });
+      table.columns.add("Tachypnea", sql.VarChar(50), { nullable: true });
+      table.columns.add("New_or_worsening_headache", sql.VarChar(50), {
+        nullable: true,
+      });
+      table.columns.add("Asthma_unresponsive", sql.VarChar(50), {
+        nullable: true,
+      });
+      table.columns.add("Palpitations", sql.VarChar(50), { nullable: true });
+      table.columns.add("Dizziness_or_syncope", sql.VarChar(50), {
+        nullable: true,
+      });
+      table.columns.add("Chest_pain", sql.VarChar(50), { nullable: true });
+      table.columns.add("Loud_murmur_heart", sql.VarChar(50), {
+        nullable: true,
+      });
+      table.columns.add(
+        "Pre_pregnancy_diagnosis_of_diabetes",
+        sql.VarChar(50),
+        {
+          nullable: true,
+        }
       );
-    });
+      table.columns.add(
+        "Pre_pregnancy_diagnosis_of_hypertension",
+        sql.VarChar(50),
+        { nullable: true }
+      );
 
-    const request = new sql.Request();
-    request.bulk(table, (err, result) => {
-      // ... error checks
-      if (err) {
-        console.log("error", err);
-      }
-    });
+      values.forEach((value) => {
+        table.rows.add(...value);
+      });
 
-    res.json({ data: values });
+      const request = new sql.Request();
+      let newTable = request.bulk(table, (err, result) => {
+        // ... error checks
+        if (err) {
+          console.log("error", err);
+        } else {
+          console.log(result);
+        }
+      });
+    }
+    res.json({ data: "SUCCESS" });
   } catch (err) {
     console.log("Error in query ", err);
   }
