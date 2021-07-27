@@ -27,9 +27,10 @@ const Table = () => {
 
   useEffect(() => {
     setLoading(true);
-    const url = `http://127.0.0.1:7000/getPersonData${
-      inputValue && `?Person=${inputValue}`
-    }`;
+    const url =
+      `http://127.0.0.1:7000/getPersonData${
+        inputValue && `?Person=${inputValue}`
+      }` || `http://127.0.0.1:7000/runPersonApi`;
     const fetchData = async () => {
       try {
         const response = await fetch(url);

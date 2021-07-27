@@ -259,16 +259,16 @@ router.get("/runPersonApi", async function (req, res) {
             // REG_DAYS_FROM_INDEX:
             //   (visitIDMap[visitId] || {}).REG_DAYS_FROM_INDEX || "",
             Risk_Cat: visitDetail.Risk_Cat || "--",
-            Risk_Factor: "--",
+            Risk_Factor: 0,
             History_of_cardiovascular_disease:
               visitDetail.History_of_cardiovascular_disease || "--",
             Shortness_of_breath_at_rest:
               visitDetail.Shortness_of_breath_at_rest || "--",
             Severe_orthopnea: visitDetail.Severe_orthopnea || "--",
-            Resting_HR: visitDetail.Resting_HR || "--",
-            Resting_Systolic_BP: visitDetail.Resting_Systolic_BP || "--",
+            Resting_HR: visitDetail.Resting_HR || null,
+            Resting_Systolic_BP: visitDetail.Resting_Systolic_BP || null,
             Oxygen_saturation: visitDetail.Oxygen_saturation || "--",
-            Respiratory_rate: visitDetail.Respiratory_rate || "--",
+            Respiratory_rate: visitDetail.Respiratory_rate || null,
             RACE: personDetails.RACE,
             Age: currentAge,
             Swelling_in_face_or_hands:
@@ -314,9 +314,9 @@ router.get("/runPersonApi", async function (req, res) {
           }
           if (
             result.Risk_Cat == "RED" ||
-            (result.Risk_Factor && result.Risk_Factor != "--")
+            (result.Risk_Factor && result.Risk_Factor != null)
           ) {
-            preparedResult.push(Object.values(result));
+            preparedResult.push(result);
           }
         }
       }
@@ -325,11 +325,16 @@ router.get("/runPersonApi", async function (req, res) {
     };
     let record = result.recordset;
     // console.log("record", record);
+    let values = [];
     for (let i = 0; i < record.length; i += 10) {
       let recordSlice = record.slice(i, i + 10),
-        values = await createTableFromPersonID(recordSlice);
+        result = await createTableFromPersonID(recordSlice);
+      // console.log("result", result);
+      values.push(...result);
+      let data = [];
+      data.push(result.map((value) => Object.values(value)));
       // console.log("slice", recordSlice);
-      console.log("values", values);
+      // console.log("data", data);
 
       const table = new sql.Table("VisitWisePersonDisease");
       table.create = true;
@@ -389,10 +394,10 @@ router.get("/runPersonApi", async function (req, res) {
         { nullable: true }
       );
 
-      values.forEach((value) => {
+      data.forEach((value) => {
         table.rows.add(...value);
       });
-
+      console.log(table);
       const request = new sql.Request();
       let newTable = request.bulk(table, (err, result) => {
         // ... error checks
@@ -404,7 +409,9 @@ router.get("/runPersonApi", async function (req, res) {
         }
       });
     }
-    res.json({ data: "Table created in DB" });
+    // console.log("values", values);
+
+    res.json({ finalresult: values });
   } catch (err) {
     console.log("Error in query ", err);
   }
