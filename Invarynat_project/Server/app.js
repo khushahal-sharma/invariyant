@@ -318,7 +318,7 @@ const init = async () => {
             if (visitDetail.Risk_Cat !== "RED") {
               result.Risk_Cat =
                 (Symptoms >= 1 && Vitals_sign >= 1 && RiskFactor >= 1) ||
-                totalRisk >= 4
+                  totalRisk >= 4
                   ? "RED"
                   : "--";
             }
@@ -336,29 +336,29 @@ const init = async () => {
     };
     const loopFunction = async () => {
       let lastProcessedPersonID = 0;
-      // lastperson = await sql.query(
+      // let lastperson = await sql.query(
       //   `select max(person_id) person_id from VisitWisePersonDisease`
       // );
       // lastProcessedPersonID = lastperson.recordset[0].person_id;
       // console.log("personid", lastProcessedPersonID);
-      for (let j = 0; j < 2; j++) {
-        // console.log("batches processed-----", j);
+      for (let j = 0; j < 10; j++) {
+        console.log("batches processed-----", j);
         result = await sql.query(
           `select PERSON_ID,CURRENT_AGE,RACE from Person 
-          where cast(person_id as bigint) >${lastProcessedPersonID || 0} 
-          order by cast(person_id as bigint) OFFSET ${offset}  ROWS
+          where  cast(person_id as bigint) >${lastProcessedPersonID || 0} 
+          order by cast(person_id as bigint) desc OFFSET ${offset}  ROWS
         FETCH NEXT ${interval} ROWS ONLY`
         );
         offset += interval;
         // interval += 5;
-        console.log("result", result);
+        //console.log("result", result);
 
         let record = result.recordset;
         // console.log("record", record);
         for (let i = 0; i < record.length; i++) {
           let recordSlice = record[i],
             values = await createTableFromPersonID(recordSlice);
-          // console.log("slice", recordSlice);
+          //console.log("slice", recordSlice);
           // console.log("values", values);
 
           const table = new sql.Table("VisitWisePersonDisease");
@@ -366,81 +366,88 @@ const init = async () => {
           table.columns.add("PERSON_ID", sql.BigInt, { nullable: false });
           table.columns.add("VISIT_ID", sql.BigInt, { nullable: false });
           // table.columns.add("VISIT_NUMBER", sql.BigInt, { nullable: false });
-          table.columns.add("Risk_Cat", sql.VarChar(50), { nullable: true });
+          table.columns.add("Risk_Cat", sql.VarChar(sql.MAX), { nullable: true });
           table.columns.add("Risk_Factor", sql.SmallInt, { nullable: true });
           table.columns.add(
             "History_of_cardiovascular_disease",
-            sql.VarChar(50),
+            sql.VarChar(sql.MAX),
             {
               nullable: true,
             }
           );
-          table.columns.add("Shortness_of_breath_at_rest", sql.VarChar(50), {
+          table.columns.add("Shortness_of_breath_at_rest", sql.VarChar(sql.MAX), {
             nullable: true,
           });
-          table.columns.add("Severe_orthopnea", sql.VarChar(50), {
+          table.columns.add("Severe_orthopnea", sql.VarChar(sql.MAX), {
             nullable: true,
           });
           table.columns.add("Resting_HR", sql.SmallInt, { nullable: true });
           table.columns.add("Resting_Systolic_BP", sql.SmallInt, {
             nullable: true,
           });
-          table.columns.add("Oxygen_saturation", sql.VarChar(50), {
+          table.columns.add("Oxygen_saturation", sql.VarChar(sql.MAX), {
             nullable: true,
           });
           table.columns.add("Respiratory_rate", sql.SmallInt, {
             nullable: true,
           });
-          table.columns.add("RACE", sql.VarChar(50), { nullable: true });
+          table.columns.add("RACE", sql.VarChar(sql.MAX), { nullable: true });
           table.columns.add("Age", sql.SmallInt, { nullable: true });
-          table.columns.add("Swelling_in_face_or_hands", sql.VarChar(50), {
+          table.columns.add("Swelling_in_face_or_hands", sql.VarChar(sql.MAX), {
             nullable: true,
           });
-          table.columns.add("Dyspnea", sql.VarChar(50), { nullable: true });
-          table.columns.add("Tachypnea", sql.VarChar(50), { nullable: true });
-          table.columns.add("New_or_worsening_headache", sql.VarChar(50), {
+          table.columns.add("Dyspnea", sql.VarChar(sql.MAX), { nullable: true });
+          table.columns.add("Tachypnea", sql.VarChar(sql.MAX), { nullable: true });
+          table.columns.add("New_or_worsening_headache", sql.VarChar(sql.MAX), {
             nullable: true,
           });
-          table.columns.add("Asthma_unresponsive", sql.VarChar(50), {
+          table.columns.add("Asthma_unresponsive", sql.VarChar(sql.MAX), {
             nullable: true,
           });
-          table.columns.add("Palpitations", sql.VarChar(50), {
+          table.columns.add("Palpitations", sql.VarChar(sql.MAX), {
             nullable: true,
           });
-          table.columns.add("Dizziness_or_syncope", sql.VarChar(50), {
+          table.columns.add("Dizziness_or_syncope", sql.VarChar(sql.MAX), {
             nullable: true,
           });
-          table.columns.add("Chest_pain", sql.VarChar(50), { nullable: true });
-          table.columns.add("Loud_murmur_heart", sql.VarChar(50), {
+          table.columns.add("Chest_pain", sql.VarChar(sql.MAX), { nullable: true });
+          table.columns.add("Loud_murmur_heart", sql.VarChar(sql.MAX), {
             nullable: true,
           });
           table.columns.add(
             "Pre_pregnancy_diagnosis_of_diabetes",
-            sql.VarChar(50),
+            sql.VarChar(sql.MAX),
             {
               nullable: true,
             }
           );
           table.columns.add(
             "Pre_pregnancy_diagnosis_of_hypertension",
-            sql.VarChar(50),
+            sql.VarChar(sql.MAX),
             { nullable: true }
           );
 
           values.forEach((value) => {
             table.rows.add(...value);
           });
-
+          console.log('code working till here-------------------', table);
           const request = new sql.Request();
-          let newTable = request.bulk(table, (err, result) => {
-            // ... error checks
-            if (err) {
-              console.log("error", err);
-              // res.json({ error: err });
-            } else if (result) {
-              // console.log(result);
-            }
-          });
+          result = await sql.create(`INSERT INTO VisitWisePersonDisease (PERSON_ID, VISIT_ID, Risk_Cat, Risk_Factor)
+          VALUES (1, 5, 'rh12', 8)`);
+          //   `select PERSON_ID,CURRENT_AGE,RACE from Person 
+          //   where  cast(person_id as bigint) >${lastProcessedPersonID || 0} 
+          //   order by cast(person_id as bigint) desc OFFSET ${offset}  ROWS
+          // FETCH NEXT ${interval} ROWS ONLY`
+
+          // request.bulk(table, (err, result) => {
+          //   // ... error checks
+          //   if (err) {
+          //     console.log("error in bulk create", err);
+          //     // res.json({ error: err });
+          //   } else if (result) {
+          //     // console.log(result);
+          //   }
+          // });
         }
       }
     };
