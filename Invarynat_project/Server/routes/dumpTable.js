@@ -7,33 +7,37 @@ var dbConfig = require("../Database/dbConnection");
 
 const { DiagnosesPointers } = require("../Constant/indexConstants");
 
-router.get("/runPersonApi", async function (req, res) {
+//router.get("/runPersonApi", async function (req, res)
+const init = async () => {
   try {
     await sql.connect(dbConfig.dbConnection());
-
     let result = {};
-    result = await sql.query(
-      `SELECT top 100 PERSON_ID,CURRENT_AGE,RACE  FROM Person`
-    );
 
-    const createTableFromPersonID = async (recordSlice) => {
-      let uniquePersonIllnes = {},
-        personIdValues = "",
-        preparedResult = [];
+    let offset = 0,
+      interval = 5;
+
+    const createTableFromPersonID = async ({
+      PERSON_ID,
+      RACE,
+      CURRENT_AGE,
+    }) => {
+      let personIdValues = "",
+        preparedResult = [],
+        uniquePersonIllnes = {};
       // find unique persion id.
-      (recordSlice || []).forEach(({ PERSON_ID, RACE, CURRENT_AGE } = {}) => {
-        uniquePersonIllnes[PERSON_ID] = {
-          RACE,
-          CURRENT_AGE,
-          PERSON_ID,
-          VISITS: {},
-        };
+      // (recordSlice || []).forEach(({ PERSON_ID, RACE, CURRENT_AGE } = {}) => {
+      uniquePersonIllnes[PERSON_ID] = {
+        RACE,
+        CURRENT_AGE,
+        PERSON_ID,
+        VISITS: {},
+      };
 
-        // Creating person values;
-        personIdValues += personIdValues.length
-          ? `,${PERSON_ID}`
-          : `${PERSON_ID}`;
-      });
+      // Creating person values;
+      personIdValues += personIdValues.length
+        ? `,${PERSON_ID}`
+        : `${PERSON_ID}`;
+      // });
 
       let EventResult = {},
         DiagnosesResult = {},
@@ -323,91 +327,114 @@ router.get("/runPersonApi", async function (req, res) {
       // console.log("result", preparedResult);
       return preparedResult;
     };
-    let record = result.recordset;
-    // console.log("record", record);
-    for (let i = 0; i < record.length; i += 10) {
-      let recordSlice = record.slice(i, i + 10),
-        values = await createTableFromPersonID(recordSlice);
-      // console.log("slice", recordSlice);
-      console.log("values", values);
+    const loopFunction = async () => {
+      for (let j = 0; j < 200; j++) {
+        result = await sql.query(
+          `select PERSON_ID,CURRENT_AGE,RACE from Person  
+        order by cast(person_id as bigint) OFFSET ${offset}  ROWS
+        FETCH NEXT ${interval} ROWS ONLY`
+        );
+        offset += interval;
+        // interval += 5;
+        // console.log("result", result);
 
-      const table = new sql.Table("VisitWisePersonDisease");
-      table.create = true;
-      table.columns.add("PERSON_ID", sql.BigInt, { nullable: false });
-      table.columns.add("VISIT_ID", sql.BigInt, { nullable: false });
-      // table.columns.add("VISIT_NUMBER", sql.BigInt, { nullable: false });
-      table.columns.add("Risk_Cat", sql.VarChar(50), { nullable: true });
-      table.columns.add("Risk_Factor", sql.SmallInt, { nullable: true });
-      table.columns.add("History_of_cardiovascular_disease", sql.VarChar(50), {
-        nullable: true,
-      });
-      table.columns.add("Shortness_of_breath_at_rest", sql.VarChar(50), {
-        nullable: true,
-      });
-      table.columns.add("Severe_orthopnea", sql.VarChar(50), {
-        nullable: true,
-      });
-      table.columns.add("Resting_HR", sql.SmallInt, { nullable: true });
-      table.columns.add("Resting_Systolic_BP", sql.SmallInt, {
-        nullable: true,
-      });
-      table.columns.add("Oxygen_saturation", sql.VarChar(50), {
-        nullable: true,
-      });
-      table.columns.add("Respiratory_rate", sql.SmallInt, { nullable: true });
-      table.columns.add("RACE", sql.VarChar(50), { nullable: true });
-      table.columns.add("Age", sql.SmallInt, { nullable: true });
-      table.columns.add("Swelling_in_face_or_hands", sql.VarChar(50), {
-        nullable: true,
-      });
-      table.columns.add("Dyspnea", sql.VarChar(50), { nullable: true });
-      table.columns.add("Tachypnea", sql.VarChar(50), { nullable: true });
-      table.columns.add("New_or_worsening_headache", sql.VarChar(50), {
-        nullable: true,
-      });
-      table.columns.add("Asthma_unresponsive", sql.VarChar(50), {
-        nullable: true,
-      });
-      table.columns.add("Palpitations", sql.VarChar(50), { nullable: true });
-      table.columns.add("Dizziness_or_syncope", sql.VarChar(50), {
-        nullable: true,
-      });
-      table.columns.add("Chest_pain", sql.VarChar(50), { nullable: true });
-      table.columns.add("Loud_murmur_heart", sql.VarChar(50), {
-        nullable: true,
-      });
-      table.columns.add(
-        "Pre_pregnancy_diagnosis_of_diabetes",
-        sql.VarChar(50),
-        {
-          nullable: true,
+        let record = result.recordset;
+        // console.log("record", record);
+        for (let i = 0; i < record.length; i++) {
+          let recordSlice = record[i],
+            values = await createTableFromPersonID(recordSlice);
+          // console.log("slice", recordSlice);
+          // console.log("values", values);
+
+          const table = new sql.Table("VisitWisePersonDisease");
+          table.create = true;
+          table.columns.add("PERSON_ID", sql.BigInt, { nullable: false });
+          table.columns.add("VISIT_ID", sql.BigInt, { nullable: false });
+          // table.columns.add("VISIT_NUMBER", sql.BigInt, { nullable: false });
+          table.columns.add("Risk_Cat", sql.VarChar(50), { nullable: true });
+          table.columns.add("Risk_Factor", sql.SmallInt, { nullable: true });
+          table.columns.add(
+            "History_of_cardiovascular_disease",
+            sql.VarChar(50),
+            {
+              nullable: true,
+            }
+          );
+          table.columns.add("Shortness_of_breath_at_rest", sql.VarChar(50), {
+            nullable: true,
+          });
+          table.columns.add("Severe_orthopnea", sql.VarChar(50), {
+            nullable: true,
+          });
+          table.columns.add("Resting_HR", sql.SmallInt, { nullable: true });
+          table.columns.add("Resting_Systolic_BP", sql.SmallInt, {
+            nullable: true,
+          });
+          table.columns.add("Oxygen_saturation", sql.VarChar(50), {
+            nullable: true,
+          });
+          table.columns.add("Respiratory_rate", sql.SmallInt, {
+            nullable: true,
+          });
+          table.columns.add("RACE", sql.VarChar(50), { nullable: true });
+          table.columns.add("Age", sql.SmallInt, { nullable: true });
+          table.columns.add("Swelling_in_face_or_hands", sql.VarChar(50), {
+            nullable: true,
+          });
+          table.columns.add("Dyspnea", sql.VarChar(50), { nullable: true });
+          table.columns.add("Tachypnea", sql.VarChar(50), { nullable: true });
+          table.columns.add("New_or_worsening_headache", sql.VarChar(50), {
+            nullable: true,
+          });
+          table.columns.add("Asthma_unresponsive", sql.VarChar(50), {
+            nullable: true,
+          });
+          table.columns.add("Palpitations", sql.VarChar(50), {
+            nullable: true,
+          });
+          table.columns.add("Dizziness_or_syncope", sql.VarChar(50), {
+            nullable: true,
+          });
+          table.columns.add("Chest_pain", sql.VarChar(50), { nullable: true });
+          table.columns.add("Loud_murmur_heart", sql.VarChar(50), {
+            nullable: true,
+          });
+          table.columns.add(
+            "Pre_pregnancy_diagnosis_of_diabetes",
+            sql.VarChar(50),
+            {
+              nullable: true,
+            }
+          );
+          table.columns.add(
+            "Pre_pregnancy_diagnosis_of_hypertension",
+            sql.VarChar(50),
+            { nullable: true }
+          );
+
+          values.forEach((value) => {
+            table.rows.add(...value);
+          });
+
+          const request = new sql.Request();
+          let newTable = request.bulk(table, (err, result) => {
+            // ... error checks
+            if (err) {
+              console.log("error", err);
+              // res.json({ error: err });
+            } else if (result) {
+              // console.log(result);
+            }
+          });
         }
-      );
-      table.columns.add(
-        "Pre_pregnancy_diagnosis_of_hypertension",
-        sql.VarChar(50),
-        { nullable: true }
-      );
+      }
+    };
 
-      values.forEach((value) => {
-        table.rows.add(...value);
-      });
-
-      const request = new sql.Request();
-      let newTable = request.bulk(table, (err, result) => {
-        // ... error checks
-        if (err) {
-          console.log("error", err);
-          // res.json({ error: err });
-        } else if (result) {
-          console.log(result);
-        }
-      });
-    }
+    result = await loopFunction();
     res.json({ data: "Table created in DB" });
   } catch (err) {
     console.log("Error in query ", err);
   }
-});
-
-module.exports = router;
+};
+init();
+//module.exports = router;

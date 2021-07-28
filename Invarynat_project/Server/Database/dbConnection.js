@@ -1,8 +1,11 @@
 exports.dbConnection = function () {
   const config = {
     client: "mssql",
-    server: "DESKTOP-8GME05M",
+    server: "DESKTOP-41TRNV1",
     database: "test",
+    CommandTimeout: 0,
+    idleTimeoutMillis: 0,
+    requestTimeout: 0,
     authentication: {
       type: "default",
       options: {
