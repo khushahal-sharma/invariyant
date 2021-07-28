@@ -303,9 +303,14 @@ const init = async () => {
           if (currentAge >= 40) {
             visitDetail.Risk_Factor.RiskFactor += 1;
           }
-
-          if (personDetails.RACE.toLowerCase() == "african american") {
-            visitDetail.Risk_Factor.RiskFactor += 1;
+          if (!personDetails.RACE) {
+            if (personDetails.RACE == "african american") {
+              visitDetail.Risk_Factor.RiskFactor += 1;
+            }
+          } else {
+            if (personDetails.RACE.toLowerCase() == "african american") {
+              visitDetail.Risk_Factor.RiskFactor += 1;
+            }
           }
           //  calculating risk category and risk factor count
 
@@ -344,7 +349,7 @@ const init = async () => {
       for (let j = 0; j < 2; j++) {
         // console.log("batches processed-----", j);
         result = await sql.query(
-          `select PERSON_ID,CURRENT_AGE,RACE from Person 
+          `select PERSON_ID,CURRENT_AGE,isNull(RACE,'') from Person 
           where cast(person_id as bigint) >${lastProcessedPersonID || 0} 
           order by cast(person_id as bigint) OFFSET ${offset}  ROWS
         FETCH NEXT ${interval} ROWS ONLY`
