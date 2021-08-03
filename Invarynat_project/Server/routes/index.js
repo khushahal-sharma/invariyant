@@ -426,6 +426,7 @@ router.get("/getPersonData", async function (req, res) {
     res.json({ data: preparedResult });
   } catch (err) {
     console.log("Error in query ", err);
+    res.json({ error: err });
   }
 });
 

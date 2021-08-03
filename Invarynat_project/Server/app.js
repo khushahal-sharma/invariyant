@@ -1,4 +1,29 @@
 "use strict";
+const debug = require("debug"),
+  express = require("express"),
+  logger = require("morgan"),
+  cookieParser = require("cookie-parser");
+/*********************************************** */
+const app = express();
+
+const routes = require("./routes/index");
+
+app.use(logger("dev"));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded());
+app.use(cookieParser());
+
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "OPTIONS, GET, POST, PUT, PATCH, DELETE"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
+
+app.use("/", routes);
 
 var sql = require("mssql");
 var dbConfig = require("./Database/dbConnection");
@@ -327,11 +352,11 @@ const init = async () => {
     const loopFunction = async () => {
       let lastProcessedPersonID = 0;
       // let lastperson = await sql.query(
-      //   `select max(person_id) person_id from VisitWisePersonDisease`
+      // `select max(person_id) person_id from VisitWisePersonDisease`
       // );
       // lastProcessedPersonID = lastperson.recordset[0].person_id;
       // console.log("personid", lastProcessedPersonID);
-      for (let j = 0; j < 100; j++) {
+      for (let j = 0; j < 10; j++) {
         // console.log("batches processed-----", j);
         result = await sql.query(
           `select PERSON_ID,CURRENT_AGE,isNull(RACE,'') from Person 
@@ -452,3 +477,18 @@ const init = async () => {
   }
 };
 init();
+
+// catch 404 and forward to error handler
+app.use(function (req, res, next) {
+  var err = new Error("Not Found");
+  err.status = 404;
+  res.json();
+});
+
+// error handlers
+
+app.set("port", process.env.PORT || 7000);
+const server = app.listen(app.get("port"), "localhost", function () {
+  console.log(" server started with details ", server.address());
+  debug("Express server listening on port " + server.address().port);
+});
