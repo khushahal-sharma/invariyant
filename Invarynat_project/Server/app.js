@@ -74,7 +74,13 @@ const init = async () => {
       DiagnosesResult = await sql.query(
         `SELECT * FROM Diagnoses Where PERSON_ID IN (${personIdValues})`
       );
-      // console.log(EventResult);
+
+      // pull dates from Events,Visits,Diagnoses table
+      // DiagnosesResult.forEach(item)
+      //       select MIN(REG_DAYS_FROM_INDEX)  from Visits where PERSON_ID=31450 and VISIT_ID=232
+      // select MIN(RECORDED_DATE)  from Diagnoses where PERSON_ID=31450 and VISIT_ID=232
+      // select MIN(EVENT_END_DATE)  from Events where PERSON_ID=31450 and VISIT_ID=232
+
       //preapare Visit map with details.
       let visitIDMap = {};
       (visitResult.recordset || []).forEach((item) => {
@@ -82,16 +88,15 @@ const init = async () => {
           ...item,
         };
       });
-
-      (DiagnosesResult.recordset || []).forEach((item) => {
-        let { VALUE, PERSON_ID, VISIT_ID, EVENT_DESC, DIAG_DATE } = item;
+      (DiagnosesResult.recordset || []).forEach(async (item) => {
+        let { VALUE, PERSON_ID, VISIT_ID, EVENT_DESC, RECORDED_DATE } = item;
         if (uniquePersonIllnes[PERSON_ID]) {
           !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] &&
             (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
-
+          let visit = uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID];
+          // console.log(VISIT_ID, PERSON_ID);
           VALUE = VALUE.toUpperCase();
           //use refrential variable
-          let visit = uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID];
           !visit["Risk_Factor"] &&
             (visit["Risk_Factor"] = {
               Symptoms: 0,
@@ -129,12 +134,19 @@ const init = async () => {
           ) {
             visit["Pre_pregnancy_diagnosis_of_hypertension"] = "Yes";
             visit["Risk_Factor"]["RiskFactor"] += 1;
-            visit["D_Date"] = DIAG_DATE;
+            // visit["D_Date"] = RECORDED_DATE;
+          }
+          if (!visit["Diagnoses_Date"]) {
+            visit["Diagnoses_Date"] = RECORDED_DATE;
+          } else {
+            if (visit["Diagnoses_Date"] > RECORDED_DATE) {
+              visit["Diagnoses_Date"] = RECORDED_DATE;
+            }
           }
         }
       });
 
-      (EventResult.recordset || []).forEach((item) => {
+      (EventResult.record || []).forEach((item) => {
         let {
           EVNET_ID,
           PERSON_ID,
@@ -142,7 +154,7 @@ const init = async () => {
           EVENT_CD,
           RESULT_VAL,
           EVENT_DESC = "",
-          EVENT_START_DATE,
+          EVENT_END_DATE,
         } = item;
 
         EVENT_CD = Number(EVENT_CD);
@@ -198,7 +210,6 @@ const init = async () => {
                 }
               }
             }
-            visit["E_Date"] = EVENT_START_DATE;
           } else if (EVENT_DESC.includes("heart rate")) {
             if (!visit["Resting_HR"]) {
               visit["Resting_HR"] = RESULT_VAL;
@@ -266,24 +277,36 @@ const init = async () => {
               }
             }
           }
+          if (!visit["Event_Date"]) {
+            visit["Event_Date"] = EVENT_END_DATE;
+          } else {
+            if (visit["Event_Date"] > EVENT_END_DATE) {
+              visit["Event_Date"] = EVENT_END_DATE;
+            }
+          }
         }
       });
-
       //Prepare final result array from uniquePersonIllnes Object.
       for (let PersonID in uniquePersonIllnes) {
+        // console.log(uniquePersonIllnes);
+
         const personDetails = uniquePersonIllnes[PersonID];
         // console.log(personDetails);
         for (let visitId in personDetails["VISITS"]) {
-          const visitDetail = personDetails["VISITS"][visitId],
-            currentAge =
+          const visitDetail = personDetails["VISITS"][visitId];
+          console.log("key", visitDetail.Diagnoses_Date, visitId, PersonID);
+          const currentAge =
               (visitIDMap[visitId] || {}).CURRENT_AGE ||
-              personDetails.CURRENT_AGE;
+              personDetails.CURRENT_AGE,
+            REG_DAYS_FROM_INDEX =
+              (visitIDMap[visitId] || {}).REG_DAYS_FROM_INDEX || 0;
           const result = {
             PERSON_ID: Number(personDetails.PERSON_ID),
             VISIT_ID: Number(visitId),
-            VISIT_NUMBER: (visitIDMap[visitId] || {}).VISIT_NUMBER || "",
-            D_Date: visitDetail.D_Date || "",
-            E_Date: visitDetail.E_Date || "",
+            VISIT_NUMBER: (visitIDMap[visitId] || {}).VISIT_NUMBER || "--",
+            // REG_DAYS_FROM_INDEX: REG_DAYS_FROM_INDEX,
+            Diagnoses_Date: visitDetail.Diagnoses_Date || 0,
+            Event_Date: visitDetail.Event_Date || 0,
             Risk_Cat: visitDetail.Risk_Cat || "--",
             Risk_Factor: "--",
             History_of_cardiovascular_disease:
@@ -348,7 +371,7 @@ const init = async () => {
             result.Risk_Cat == "RED" ||
             (result.Risk_Factor && result.Risk_Factor != "--")
           ) {
-            console.log(result);
+            // console.log(result);
             preparedResult.push(Object.values(result));
           }
         }
@@ -368,7 +391,7 @@ const init = async () => {
         result = await sql.query(
           `select PERSON_ID,CURRENT_AGE,RACE from Person 
           where  cast(person_id as bigint) >3143`
-          //   order by cast(person_id as bigint) asc OFFSET ${offset}  ROWS
+          // order by cast(person_id as bigint) asc OFFSET ${offset}  ROWS
           // FETCH NEXT ${interval} ROWS ONLY`
         );
         offset += interval;
@@ -380,15 +403,18 @@ const init = async () => {
             values = await createTableFromPersonID(recordSlice);
           // console.log("values", values);
 
-          const table = new sql.Table("VisitWisePersonDisease");
+          const table = new sql.Table("VisitWisePerson");
           table.create = true;
           table.columns.add("PERSON_ID", sql.BigInt, { nullable: false });
           table.columns.add("VISIT_ID", sql.BigInt, { nullable: false });
           table.columns.add("VISIT_NUMBER", sql.VarChar(sql.MAX), {
             nullable: true,
           });
-          table.columns.add("D_Date", sql.BigInt, { nullable: true });
-          table.columns.add("E_Date", sql.BigInt, { nullable: true });
+          // table.columns.add("REG_DAYS_FROM_INDEX", sql.BigInt, {
+          //   nullable: true,
+          // });
+          table.columns.add("Diagnoses_Date", sql.BigInt, { nullable: true });
+          table.columns.add("Event_Date", sql.BigInt, { nullable: true });
           table.columns.add("Risk_Cat", sql.VarChar(sql.MAX), {
             nullable: true,
           });
