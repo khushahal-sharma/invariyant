@@ -33,10 +33,7 @@ const { DiagnosesPointers } = require("./Constant/indexConstants");
 const init = async () => {
   try {
     await sql.connect(dbConfig.dbConnection());
-    let result = {};
-
-    let offset = 0,
-      interval = 5;
+    let personTableData = {};
 
     const createTableFromPersonID = async ({
       PERSON_ID,
@@ -75,13 +72,6 @@ const init = async () => {
         `SELECT * FROM Diagnoses Where PERSON_ID IN (${personIdValues})`
       );
 
-      // pull dates from Events,Visits,Diagnoses table
-      // DiagnosesResult.forEach(item)
-      //       select MIN(REG_DAYS_FROM_INDEX)  from Visits where PERSON_ID=31450 and VISIT_ID=232
-      // select MIN(RECORDED_DATE)  from Diagnoses where PERSON_ID=31450 and VISIT_ID=232
-      // select MIN(EVENT_END_DATE)  from Events where PERSON_ID=31450 and VISIT_ID=232
-
-      //preapare Visit map with details.
       let visitIDMap = {};
       (visitResult.recordset || []).forEach((item) => {
         visitIDMap[item.VISIT_ID] = {
@@ -146,7 +136,7 @@ const init = async () => {
         }
       });
 
-      (EventResult.record || []).forEach((item) => {
+      (EventResult.recordset || []).forEach((item) => {
         let {
           EVNET_ID,
           PERSON_ID,
@@ -155,11 +145,13 @@ const init = async () => {
           RESULT_VAL,
           EVENT_DESC = "",
           EVENT_END_DATE,
+          CLINICAL_CAT,
         } = item;
 
         EVENT_CD = Number(EVENT_CD);
         EVENT_DESC = EVENT_DESC.toLowerCase();
-        RESULT_VAL = Number(RESULT_VAL);
+        // RESULT_VAL = Number(RESULT_VAL);
+        CLINICAL_CAT = CLINICAL_CAT.toLowerCase();
 
         if (uniquePersonIllnes[PERSON_ID]) {
           // Add Visit_ID wise data to each person.
@@ -177,7 +169,29 @@ const init = async () => {
             });
 
           //Add Systolic BP details to Person widget.
-          if (EVENT_CD == 102225120) {
+
+          if (
+            CLINICAL_CAT.includes("tabocco") ||
+            CLINICAL_CAT.includes("alcohol") ||
+            CLINICAL_CAT.includes("other substance")
+          ) {
+            RESULT_VAL = RESULT_VAL.toLowerCase();
+
+            if (
+              !RESULT_VAL.includes("never") ||
+              !RESULT_VAL.includes("no") ||
+              !RESULT_VAL.includes("0")
+            ) {
+              visit["History_of_Substance_use"] = "Yes";
+              visit["Substance_Cat"] =
+                (CLINICAL_CAT.includes("tabocco") && "Tabocco") ||
+                (CLINICAL_CAT.includes("alcohol") && "Alcohol") ||
+                "Others";
+              visit["Risk_Factor"]["RiskFactor"] += 1;
+            }
+          } else if (EVENT_CD == 102225120) {
+            RESULT_VAL = Number(RESULT_VAL);
+
             if (!visit["Resting_Systolic_BP"]) {
               visit["Resting_Systolic_BP"] = RESULT_VAL;
               if (RESULT_VAL >= 160) {
@@ -211,6 +225,8 @@ const init = async () => {
               }
             }
           } else if (EVENT_DESC.includes("heart rate")) {
+            RESULT_VAL = Number(RESULT_VAL);
+
             if (!visit["Resting_HR"]) {
               visit["Resting_HR"] = RESULT_VAL;
               if (RESULT_VAL >= 120) {
@@ -244,6 +260,7 @@ const init = async () => {
               }
             }
           } else if (EVENT_DESC.includes("respiratory rate")) {
+            RESULT_VAL = Number(RESULT_VAL);
             if (!visit["Respiratory_rate"]) {
               visit["Respiratory_rate"] = RESULT_VAL;
               if (RESULT_VAL >= 30) {
@@ -276,6 +293,16 @@ const init = async () => {
                 }
               }
             }
+          } else if (EVENT_DESC.includes("urine")) {
+            RESULT_VAL = RESULT_VAL.toLowerCase();
+            if (
+              RESULT_VAL.includes("positive") ||
+              RESULT_VAL.includes("detected")
+            ) {
+              visit["History_of_Substance_use"] = "Yes";
+              visit["Substance_Cat"] = "Others";
+              visit["Risk_Factor"]["RiskFactor"] += 1;
+            }
           }
           if (!visit["Event_Date"]) {
             visit["Event_Date"] = EVENT_END_DATE;
@@ -294,12 +321,12 @@ const init = async () => {
         // console.log(personDetails);
         for (let visitId in personDetails["VISITS"]) {
           const visitDetail = personDetails["VISITS"][visitId];
-          console.log("key", visitDetail.Diagnoses_Date, visitId, PersonID);
+          // console.log("key", visitDetail.Diagnoses_Date, visitId, PersonID);
           const currentAge =
-              (visitIDMap[visitId] || {}).CURRENT_AGE ||
-              personDetails.CURRENT_AGE,
-            REG_DAYS_FROM_INDEX =
-              (visitIDMap[visitId] || {}).REG_DAYS_FROM_INDEX || 0;
+            (visitIDMap[visitId] || {}).CURRENT_AGE ||
+            personDetails.CURRENT_AGE;
+          // REG_DAYS_FROM_INDEX =
+          //   (visitIDMap[visitId] || {}).REG_DAYS_FROM_INDEX || 0;
           const result = {
             PERSON_ID: Number(personDetails.PERSON_ID),
             VISIT_ID: Number(visitId),
@@ -320,6 +347,9 @@ const init = async () => {
             Respiratory_rate: visitDetail.Respiratory_rate || "--",
             RACE: personDetails.RACE,
             Age: currentAge,
+            History_of_Substance_use:
+              visitDetail.History_of_Substance_use || "--",
+            Substance_Cat: visitDetail.Substance_Cat || "--",
             Swelling_in_face_or_hands:
               visitDetail.Swelling_in_face_or_hands || "--",
             Dyspnea: visitDetail.Dyspnea || "--",
@@ -380,26 +410,29 @@ const init = async () => {
       return preparedResult;
     };
     const loopFunction = async () => {
-      let lastProcessedPersonID = 0;
+      let lastProcessedPersonID = 0,
+        offset = 0,
+        interval = 5;
       // let lastperson = await sql.query(
       // `select max(person_id) person_id from VisitWisePersonDisease`
       // );
       // lastProcessedPersonID = lastperson.recordset[0].person_id;
       // console.log("personid", lastProcessedPersonID);
-      for (let j = 0; j < 1; j++) {
+
+      for (let j = 0; j < 6000; j++) {
         // console.log("batches processed-----", j);
-        result = await sql.query(
+        personTableData = await sql.query(
           `select PERSON_ID,CURRENT_AGE,RACE from Person 
-          where  cast(person_id as bigint) >3143`
-          // order by cast(person_id as bigint) asc OFFSET ${offset}  ROWS
-          // FETCH NEXT ${interval} ROWS ONLY`
+          where  cast(person_id as bigint) >${lastProcessedPersonID || 0}
+          order by cast(person_id as bigint) asc OFFSET ${offset}  ROWS
+          FETCH NEXT ${interval} ROWS ONLY`
         );
         offset += interval;
 
-        let record = result.recordset;
+        let records = personTableData.recordset;
         // console.log("record", record);
-        for (let i = 0; i < record.length; i++) {
-          let recordSlice = record[i],
+        for (let i = 0; i < records.length; i++) {
+          let recordSlice = records[i],
             values = await createTableFromPersonID(recordSlice);
           // console.log("values", values);
 
@@ -448,6 +481,12 @@ const init = async () => {
           });
           table.columns.add("RACE", sql.VarChar(sql.MAX), { nullable: true });
           table.columns.add("Age", sql.SmallInt, { nullable: true });
+          table.columns.add("History_of_Substance_use", sql.VarChar(sql.MAX), {
+            nullable: true,
+          });
+          table.columns.add("Substance_Cat", sql.VarChar(sql.MAX), {
+            nullable: true,
+          });
           table.columns.add("Swelling_in_face_or_hands", sql.VarChar(sql.MAX), {
             nullable: true,
           });
