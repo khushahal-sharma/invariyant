@@ -171,20 +171,20 @@ const init = async () => {
           //Add Systolic BP details to Person widget.
 
           if (
-            CLINICAL_CAT.includes("tabocco") ||
+            CLINICAL_CAT.includes("tobacco") ||
             CLINICAL_CAT.includes("alcohol") ||
             CLINICAL_CAT.includes("other substance")
           ) {
             RESULT_VAL = RESULT_VAL.toLowerCase();
-
             if (
-              !RESULT_VAL.includes("never") ||
-              !RESULT_VAL.includes("no") ||
-              !RESULT_VAL.includes("0")
+              RESULT_VAL.includes("never") ||
+              RESULT_VAL.includes("no") ||
+              RESULT_VAL.includes("0")
             ) {
+            } else {
               visit["History_of_Substance_use"] = "Yes";
               visit["Substance_Cat"] =
-                (CLINICAL_CAT.includes("tabocco") && "Tabocco") ||
+                (CLINICAL_CAT.includes("tobacco") && "Tobacco") ||
                 (CLINICAL_CAT.includes("alcohol") && "Alcohol") ||
                 "Others";
               visit["Risk_Factor"]["RiskFactor"] += 1;
@@ -321,7 +321,7 @@ const init = async () => {
         // console.log(personDetails);
         for (let visitId in personDetails["VISITS"]) {
           const visitDetail = personDetails["VISITS"][visitId];
-          // console.log("key", visitDetail.Diagnoses_Date, visitId, PersonID);
+          // console.log("key", visitDetail, visitId, PersonID);
           const currentAge =
             (visitIDMap[visitId] || {}).CURRENT_AGE ||
             personDetails.CURRENT_AGE;
@@ -419,7 +419,7 @@ const init = async () => {
       // lastProcessedPersonID = lastperson.recordset[0].person_id;
       // console.log("personid", lastProcessedPersonID);
 
-      for (let j = 0; j < 6000; j++) {
+      for (let j = 0; j < 2; j++) {
         // console.log("batches processed-----", j);
         personTableData = await sql.query(
           `select PERSON_ID,CURRENT_AGE,RACE from Person 
