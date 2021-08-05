@@ -35,10 +35,11 @@ const init = async () => {
     await sql.connect(dbConfig.dbConnection());
     let personTableData = {};
 
-    const createTableFromPersonID = async ({
+    const createTableFromPersonData = async ({
       PERSON_ID,
       RACE,
       CURRENT_AGE,
+      ETHNCITY,
     }) => {
       let personIdValues = "",
         preparedResult = [],
@@ -48,6 +49,7 @@ const init = async () => {
         RACE,
         CURRENT_AGE,
         PERSON_ID,
+        ETHNCITY,
         VISITS: {},
       };
 
@@ -138,7 +140,7 @@ const init = async () => {
 
       (EventResult.recordset || []).forEach((item) => {
         let {
-          EVNET_ID,
+          EVENT_ID,
           PERSON_ID,
           VISIT_ID,
           EVENT_CD,
@@ -151,7 +153,7 @@ const init = async () => {
         EVENT_CD = Number(EVENT_CD);
         EVENT_DESC = EVENT_DESC.toLowerCase();
         // RESULT_VAL = Number(RESULT_VAL);
-        CLINICAL_CAT = CLINICAL_CAT.toLowerCase();
+        CLINICAL_CAT = (CLINICAL_CAT ? CLINICAL_CAT : "").toLowerCase();
 
         if (uniquePersonIllnes[PERSON_ID]) {
           // Add Visit_ID wise data to each person.
@@ -175,19 +177,21 @@ const init = async () => {
             CLINICAL_CAT.includes("alcohol") ||
             CLINICAL_CAT.includes("other substance")
           ) {
-            RESULT_VAL = RESULT_VAL.toLowerCase();
+            RESULT_VAL = (RESULT_VAL ? RESULT_VAL : "").toLowerCase();
             if (
               RESULT_VAL.includes("never") ||
               RESULT_VAL.includes("no") ||
               RESULT_VAL.includes("0")
             ) {
             } else {
-              visit["History_of_Substance_use"] = "Yes";
-              visit["Substance_Cat"] =
-                (CLINICAL_CAT.includes("tobacco") && "Tobacco") ||
-                (CLINICAL_CAT.includes("alcohol") && "Alcohol") ||
-                "Others";
-              visit["Risk_Factor"]["RiskFactor"] += 1;
+              if (!visit["History_of_Substance_use"]) {
+                visit["History_of_Substance_use"] = "Yes";
+                visit["Substance_Cat"] =
+                  (CLINICAL_CAT.includes("tobacco") && "Tobacco") ||
+                  (CLINICAL_CAT.includes("alcohol") && "Alcohol") ||
+                  "Others";
+                visit["Risk_Factor"]["RiskFactor"] += 1;
+              }
             }
           } else if (EVENT_CD == 102225120) {
             RESULT_VAL = Number(RESULT_VAL);
@@ -294,14 +298,16 @@ const init = async () => {
               }
             }
           } else if (EVENT_DESC.includes("urine")) {
-            RESULT_VAL = RESULT_VAL.toLowerCase();
+            RESULT_VAL = (RESULT_VAL ? RESULT_VAL : "").toLowerCase();
             if (
               RESULT_VAL.includes("positive") ||
               RESULT_VAL.includes("detected")
             ) {
-              visit["History_of_Substance_use"] = "Yes";
-              visit["Substance_Cat"] = "Others";
-              visit["Risk_Factor"]["RiskFactor"] += 1;
+              if (!visit["History_of_Substance_use"]) {
+                visit["History_of_Substance_use"] = "Yes";
+                visit["Substance_Cat"] = "Others";
+                visit["Risk_Factor"]["RiskFactor"] += 1;
+              }
             }
           }
           if (!visit["Event_Date"]) {
@@ -323,15 +329,16 @@ const init = async () => {
           const visitDetail = personDetails["VISITS"][visitId];
           // console.log("key", visitDetail, visitId, PersonID);
           const currentAge =
-            (visitIDMap[visitId] || {}).CURRENT_AGE ||
-            personDetails.CURRENT_AGE;
-          // REG_DAYS_FROM_INDEX =
-          //   (visitIDMap[visitId] || {}).REG_DAYS_FROM_INDEX || 0;
+              (visitIDMap[visitId] || {}).CURRENT_AGE ||
+              personDetails.CURRENT_AGE,
+            REG_DAYS_FROM_INDEX =
+              (visitIDMap[visitId] || {}).REG_DAYS_FROM_INDEX || -1;
           const result = {
             PERSON_ID: Number(personDetails.PERSON_ID),
             VISIT_ID: Number(visitId),
             VISIT_NUMBER: (visitIDMap[visitId] || {}).VISIT_NUMBER || "--",
-            // REG_DAYS_FROM_INDEX: REG_DAYS_FROM_INDEX,
+            ETHNCITY: personDetails.ETHNCITY || "--",
+            REG_DAYS_FROM_INDEX: REG_DAYS_FROM_INDEX,
             Diagnoses_Date: visitDetail.Diagnoses_Date || 0,
             Event_Date: visitDetail.Event_Date || 0,
             Risk_Cat: visitDetail.Risk_Cat || "--",
@@ -347,9 +354,6 @@ const init = async () => {
             Respiratory_rate: visitDetail.Respiratory_rate || "--",
             RACE: personDetails.RACE,
             Age: currentAge,
-            History_of_Substance_use:
-              visitDetail.History_of_Substance_use || "--",
-            Substance_Cat: visitDetail.Substance_Cat || "--",
             Swelling_in_face_or_hands:
               visitDetail.Swelling_in_face_or_hands || "--",
             Dyspnea: visitDetail.Dyspnea || "--",
@@ -365,6 +369,9 @@ const init = async () => {
               visitDetail.Pre_pregnancy_diagnosis_of_diabetes || "--",
             Pre_pregnancy_diagnosis_of_hypertension:
               visitDetail.Pre_pregnancy_diagnosis_of_hypertension || "--",
+            History_of_Substance_use:
+              visitDetail.History_of_Substance_use || "--",
+            Substance_Cat: visitDetail.Substance_Cat || "--",
           };
 
           if (currentAge >= 40) {
@@ -409,7 +416,7 @@ const init = async () => {
       // console.log("result", preparedResult);
       return preparedResult;
     };
-    const loopFunction = async () => {
+    const createTable = async () => {
       let lastProcessedPersonID = 0,
         offset = 0,
         interval = 5;
@@ -419,21 +426,21 @@ const init = async () => {
       // lastProcessedPersonID = lastperson.recordset[0].person_id;
       // console.log("personid", lastProcessedPersonID);
 
-      for (let j = 0; j < 2; j++) {
+      for (let j = 0; j < 6000; j++) {
         // console.log("batches processed-----", j);
         personTableData = await sql.query(
-          `select PERSON_ID,CURRENT_AGE,RACE from Person 
-          where  cast(person_id as bigint) >${lastProcessedPersonID || 0}
+          `select PERSON_ID,CURRENT_AGE,RACE,ETHNCITY from Person 
+          where  cast(person_id as bigint) =${lastProcessedPersonID || 0}
           order by cast(person_id as bigint) asc OFFSET ${offset}  ROWS
           FETCH NEXT ${interval} ROWS ONLY`
         );
         offset += interval;
 
         let records = personTableData.recordset;
-        // console.log("record", record);
+        // console.log("record", records);
         for (let i = 0; i < records.length; i++) {
           let recordSlice = records[i],
-            values = await createTableFromPersonID(recordSlice);
+            values = await createTableFromPersonData(recordSlice);
           // console.log("values", values);
 
           const table = new sql.Table("VisitWisePerson");
@@ -443,9 +450,12 @@ const init = async () => {
           table.columns.add("VISIT_NUMBER", sql.VarChar(sql.MAX), {
             nullable: true,
           });
-          // table.columns.add("REG_DAYS_FROM_INDEX", sql.BigInt, {
-          //   nullable: true,
-          // });
+          table.columns.add("ETHNCITY", sql.VarChar(sql.MAX), {
+            nullable: true,
+          });
+          table.columns.add("REG_DAYS_FROM_INDEX", sql.BigInt, {
+            nullable: true,
+          });
           table.columns.add("Diagnoses_Date", sql.BigInt, { nullable: true });
           table.columns.add("Event_Date", sql.BigInt, { nullable: true });
           table.columns.add("Risk_Cat", sql.VarChar(sql.MAX), {
@@ -481,12 +491,6 @@ const init = async () => {
           });
           table.columns.add("RACE", sql.VarChar(sql.MAX), { nullable: true });
           table.columns.add("Age", sql.SmallInt, { nullable: true });
-          table.columns.add("History_of_Substance_use", sql.VarChar(sql.MAX), {
-            nullable: true,
-          });
-          table.columns.add("Substance_Cat", sql.VarChar(sql.MAX), {
-            nullable: true,
-          });
           table.columns.add("Swelling_in_face_or_hands", sql.VarChar(sql.MAX), {
             nullable: true,
           });
@@ -526,6 +530,12 @@ const init = async () => {
             sql.VarChar(sql.MAX),
             { nullable: true }
           );
+          table.columns.add("History_of_Substance_use", sql.VarChar(sql.MAX), {
+            nullable: true,
+          });
+          table.columns.add("Substance_Cat", sql.VarChar(sql.MAX), {
+            nullable: true,
+          });
 
           values.length &&
             values.forEach((value) => {
@@ -547,7 +557,7 @@ const init = async () => {
         }
       }
     };
-    loopFunction();
+    createTable();
     //res.json({ data: "Table created in DB" });
   } catch (err) {
     console.log("Error in query ", err);
