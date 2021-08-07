@@ -39,7 +39,7 @@ const init = async () => {
       PERSON_ID,
       RACE,
       CURRENT_AGE,
-      ETHNCITY,
+      ETHNICITY,
     }) => {
       let personIdValues = "",
         preparedResult = [],
@@ -49,7 +49,7 @@ const init = async () => {
         RACE,
         CURRENT_AGE,
         PERSON_ID,
-        ETHNCITY,
+        ETHNICITY,
         VISITS: {},
       };
 
@@ -73,19 +73,23 @@ const init = async () => {
       DiagnosesResult = await sql.query(
         `SELECT * FROM Diagnoses Where PERSON_ID IN (${personIdValues})`
       );
-
+      // console.log(DiagnosesResult);
       let visitIDMap = {};
       (visitResult.recordset || []).forEach((item) => {
         visitIDMap[item.VISIT_ID] = {
           ...item,
         };
       });
-      (DiagnosesResult.recordset || []).forEach(async (item) => {
+      // let count = 0;
+      (DiagnosesResult.recordset || []).forEach((item) => {
         let { VALUE, PERSON_ID, VISIT_ID, EVENT_DESC, RECORDED_DATE } = item;
+        // count += 1;
         if (uniquePersonIllnes[PERSON_ID]) {
+          // console.log(RECORDED_DATE, count);
           !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] &&
             (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
           let visit = uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID];
+          // console.log("personid", PERSON_ID, "visitid", VISIT_ID);
           // console.log(VISIT_ID, PERSON_ID);
           VALUE = VALUE.toUpperCase();
           //use refrential variable
@@ -130,9 +134,13 @@ const init = async () => {
           }
           if (!visit["Diagnoses_Date"]) {
             visit["Diagnoses_Date"] = RECORDED_DATE;
+            // console.log("date in diag", visit["Diagnoses_Date"], RECORDED_DATE);
           } else {
+            // console.log("already", visit["Diagnoses_Date"], RECORDED_DATE);
+
             if (visit["Diagnoses_Date"] > RECORDED_DATE) {
               visit["Diagnoses_Date"] = RECORDED_DATE;
+              // console.log("inserted", visit["Diagnoses_Date"], RECORDED_DATE);
             }
           }
         }
@@ -151,7 +159,7 @@ const init = async () => {
         } = item;
 
         EVENT_CD = Number(EVENT_CD);
-        EVENT_DESC = EVENT_DESC.toLowerCase();
+        EVENT_DESC = (EVENT_DESC ? EVENT_DESC : "").toLowerCase();
         // RESULT_VAL = Number(RESULT_VAL);
         CLINICAL_CAT = (CLINICAL_CAT ? CLINICAL_CAT : "").toLowerCase();
 
@@ -299,14 +307,23 @@ const init = async () => {
             }
           } else if (EVENT_DESC.includes("urine")) {
             RESULT_VAL = (RESULT_VAL ? RESULT_VAL : "").toLowerCase();
-            if (
-              RESULT_VAL.includes("positive") ||
-              RESULT_VAL.includes("detected")
-            ) {
+            if (RESULT_VAL.includes("positive") || RESULT_VAL == "detected") {
               if (!visit["History_of_Substance_use"]) {
                 visit["History_of_Substance_use"] = "Yes";
                 visit["Substance_Cat"] = "Others";
                 visit["Risk_Factor"]["RiskFactor"] += 1;
+              }
+            }
+          } else if (EVENT_DESC.includes("body mass index dosing")) {
+            RESULT_VAL = Number(RESULT_VAL);
+            if (RESULT_VAL >= 35) {
+              if (!visit["BMI"]) {
+                visit["BMI"] = RESULT_VAL;
+                visit["Risk_Factor"]["RiskFactor"] += 1;
+              } else {
+                if (visit["BMI"] < RESULT_VAL) {
+                  visit["BMI"] = RESULT_VAL;
+                }
               }
             }
           }
@@ -337,7 +354,6 @@ const init = async () => {
             PERSON_ID: Number(personDetails.PERSON_ID),
             VISIT_ID: Number(visitId),
             VISIT_NUMBER: (visitIDMap[visitId] || {}).VISIT_NUMBER || "--",
-            ETHNCITY: personDetails.ETHNCITY || "--",
             REG_DAYS_FROM_INDEX: REG_DAYS_FROM_INDEX,
             Diagnoses_Date: visitDetail.Diagnoses_Date || 0,
             Event_Date: visitDetail.Event_Date || 0,
@@ -354,6 +370,8 @@ const init = async () => {
             Respiratory_rate: visitDetail.Respiratory_rate || "--",
             RACE: personDetails.RACE,
             Age: currentAge,
+            ETHNICITY: personDetails.ETHNICITY || "--",
+            BMI: visitDetail.BMI || 0,
             Swelling_in_face_or_hands:
               visitDetail.Swelling_in_face_or_hands || "--",
             Dyspnea: visitDetail.Dyspnea || "--",
@@ -429,8 +447,8 @@ const init = async () => {
       for (let j = 0; j < 6000; j++) {
         // console.log("batches processed-----", j);
         personTableData = await sql.query(
-          `select PERSON_ID,CURRENT_AGE,RACE,ETHNCITY from Person 
-          where  cast(person_id as bigint) =${lastProcessedPersonID || 0}
+          `select PERSON_ID,CURRENT_AGE,RACE,ETHNICITY from Person 
+          where  cast(person_id as bigint) >${lastProcessedPersonID || 0}
           order by cast(person_id as bigint) asc OFFSET ${offset}  ROWS
           FETCH NEXT ${interval} ROWS ONLY`
         );
@@ -448,9 +466,6 @@ const init = async () => {
           table.columns.add("PERSON_ID", sql.BigInt, { nullable: false });
           table.columns.add("VISIT_ID", sql.BigInt, { nullable: false });
           table.columns.add("VISIT_NUMBER", sql.VarChar(sql.MAX), {
-            nullable: true,
-          });
-          table.columns.add("ETHNCITY", sql.VarChar(sql.MAX), {
             nullable: true,
           });
           table.columns.add("REG_DAYS_FROM_INDEX", sql.BigInt, {
@@ -491,6 +506,12 @@ const init = async () => {
           });
           table.columns.add("RACE", sql.VarChar(sql.MAX), { nullable: true });
           table.columns.add("Age", sql.SmallInt, { nullable: true });
+          table.columns.add("ETHNICITY", sql.VarChar(sql.MAX), {
+            nullable: true,
+          });
+          table.columns.add("BMI", sql.SmallInt, {
+            nullable: true,
+          });
           table.columns.add("Swelling_in_face_or_hands", sql.VarChar(sql.MAX), {
             nullable: true,
           });
