@@ -29,7 +29,9 @@ var sql = require("mssql");
 var dbConfig = require("./Database/dbConnection");
 
 const { DiagnosesPointers } = require("./Constant/indexConstants");
-
+const { Medication } = require("./MedicationAdmin.js");
+const { EventandDiagTable } = require("./AnalysedTables.js");
+// console.log(Medication);
 const init = async () => {
   try {
     await sql.connect(dbConfig.dbConnection());
@@ -83,15 +85,13 @@ const init = async () => {
       // let count = 0;
       (DiagnosesResult.recordset || []).forEach((item) => {
         let { VALUE, PERSON_ID, VISIT_ID, EVENT_DESC, RECORDED_DATE } = item;
-        // count += 1;
+
         if (uniquePersonIllnes[PERSON_ID]) {
-          // console.log(RECORDED_DATE, count);
           !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] &&
             (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
           let visit = uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID];
-          // console.log("personid", PERSON_ID, "visitid", VISIT_ID);
-          // console.log(VISIT_ID, PERSON_ID);
-          VALUE = VALUE.toUpperCase();
+
+          VALUE = (VALUE ? VALUE : "").toUpperCase();
           //use refrential variable
           !visit["Risk_Factor"] &&
             (visit["Risk_Factor"] = {
@@ -132,15 +132,11 @@ const init = async () => {
             visit["Risk_Factor"]["RiskFactor"] += 1;
             // visit["D_Date"] = RECORDED_DATE;
           }
-          if (!visit["Diagnoses_Date"]) {
+          if (visit["Diagnoses_Date"] === undefined) {
             visit["Diagnoses_Date"] = RECORDED_DATE;
-            // console.log("date in diag", visit["Diagnoses_Date"], RECORDED_DATE);
           } else {
-            // console.log("already", visit["Diagnoses_Date"], RECORDED_DATE);
-
             if (visit["Diagnoses_Date"] > RECORDED_DATE) {
               visit["Diagnoses_Date"] = RECORDED_DATE;
-              // console.log("inserted", visit["Diagnoses_Date"], RECORDED_DATE);
             }
           }
         }
@@ -167,7 +163,6 @@ const init = async () => {
           // Add Visit_ID wise data to each person.
           !uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] &&
             (uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID] = {});
-
           let visit = uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID];
           // defesive check for risk factors
           !visit["Risk_Factor"] &&
@@ -305,7 +300,12 @@ const init = async () => {
                 }
               }
             }
-          } else if (EVENT_DESC.includes("urine")) {
+          } else if (
+            EVENT_DESC.includes("urine amph scrn") ||
+            EVENT_DESC.includes("urine cannab scrn") ||
+            EVENT_DESC.includes("urine cocaine met") ||
+            EVENT_DESC.includes("urine opiate scrn")
+          ) {
             RESULT_VAL = (RESULT_VAL ? RESULT_VAL : "").toLowerCase();
             if (RESULT_VAL.includes("positive") || RESULT_VAL == "detected") {
               if (!visit["History_of_Substance_use"]) {
@@ -317,7 +317,7 @@ const init = async () => {
           } else if (EVENT_DESC.includes("body mass index dosing")) {
             RESULT_VAL = Number(RESULT_VAL);
             if (RESULT_VAL >= 35) {
-              if (!visit["BMI"]) {
+              if (visit["BMI"] === undefined) {
                 visit["BMI"] = RESULT_VAL;
                 visit["Risk_Factor"]["RiskFactor"] += 1;
               } else {
@@ -325,9 +325,18 @@ const init = async () => {
                   visit["BMI"] = RESULT_VAL;
                 }
               }
+            } else {
+              if (visit["BMI"] === undefined) {
+                visit["BMI"] = RESULT_VAL;
+                // visit["Risk_Factor"]["RiskFactor"] += 1;
+              } else {
+                if (visit["BMI"] < RESULT_VAL) {
+                  visit["BMI"] = RESULT_VAL;
+                }
+              }
             }
           }
-          if (!visit["Event_Date"]) {
+          if (visit["Event_Date"] === undefined) {
             visit["Event_Date"] = EVENT_END_DATE;
           } else {
             if (visit["Event_Date"] > EVENT_END_DATE) {
@@ -585,6 +594,10 @@ const init = async () => {
   }
 };
 init();
+
+// Medication();
+
+// EventandDiagTable();
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
