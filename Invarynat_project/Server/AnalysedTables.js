@@ -92,7 +92,7 @@ const init = async () => {
         and EVENT_DESC not like '%perineal%'  
         and EVENT_DESC not like '%screening%'  
         and EVENT_DESC not like '%post-term%'
-        and EVENT_DESC like '%Other specified pregnancy related conditions%'  order by RECORDED_DATE`
+        and EVENT_DESC <> '%Other specified pregnancy related conditions%'  order by RECORDED_DATE`
       );
       // and EVENT_DESC like '%Other specified pregnancy related conditions%'  order by RECORDED_DATE`
 
@@ -101,9 +101,12 @@ const init = async () => {
         let { PERSON_ID, VISIT_ID, VISIT_NUMBER, REASON_FOR_VISIT, ZIP_TYPE } =
           item;
         // console.log(item);
-        // if (!(visitTabledata[PERSON_ID] || {})[VISIT_ID]) {
-        visitTabledata[PERSON_ID] = { [VISIT_ID]: {} } || {};
-        // }
+        if (!(visitTabledata[PERSON_ID] || {})[VISIT_ID]) {
+          if (!visitTabledata[PERSON_ID]) {
+            visitTabledata[PERSON_ID] = {};
+          }
+          visitTabledata[PERSON_ID][VISIT_ID] = {};
+        }
         // console.log(visitTabledata);
         let visit = uniquePersonIllnes["EventTableData"][PERSON_ID];
         visitTabledata[PERSON_ID][VISIT_ID]["VISIT_NUMBER"] = VISIT_NUMBER;

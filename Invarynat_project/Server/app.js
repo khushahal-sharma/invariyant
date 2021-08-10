@@ -70,7 +70,7 @@ const init = async () => {
       );
 
       visitResult = await sql.query(
-        `SELECT * FROM Visits Where PERSON_ID IN (${personIdValues})`
+        `SELECT * FROM Visits2 Where PERSON_ID IN (${personIdValues})`
       );
       DiagnosesResult = await sql.query(
         `SELECT * FROM Diagnoses Where PERSON_ID IN (${personIdValues})`
@@ -593,7 +593,7 @@ const init = async () => {
     console.log("Error in query ", err);
   }
 };
-init();
+// init();
 
 // Medication();
 
