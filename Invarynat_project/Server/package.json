@@ -4,9 +4,7 @@
   "private": true,
   "scripts": {
     "start": "node app",
-    "devStart": "nodemon app",
-    "createAnalysedTable": "nodemon AnalysedTables",
-    "createMedicationTable": "nodemon MedicationAdmin"
+    "devStart": "nodemon app"
   },
   "description": "Invariyant risk calculate",
   "author": {

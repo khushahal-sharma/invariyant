@@ -31,7 +31,7 @@ var dbConfig = require("./Database/dbConnection");
 const { DiagnosesPointers } = require("./Constant/indexConstants");
 const { Medication } = require("./MedicationAdmin.js");
 const { EventandDiagTable } = require("./AnalysedTables.js");
-// console.log(Medication);
+
 const init = async () => {
   try {
     await sql.connect(dbConfig.dbConnection());
@@ -75,14 +75,14 @@ const init = async () => {
       DiagnosesResult = await sql.query(
         `SELECT * FROM Diagnoses Where PERSON_ID IN (${personIdValues})`
       );
-      // console.log(DiagnosesResult);
+
       let visitIDMap = {};
       (visitResult.recordset || []).forEach((item) => {
         visitIDMap[item.VISIT_ID] = {
           ...item,
         };
       });
-      // let count = 0;
+
       (DiagnosesResult.recordset || []).forEach((item) => {
         let { VALUE, PERSON_ID, VISIT_ID, EVENT_DESC, RECORDED_DATE } = item;
 
@@ -92,7 +92,7 @@ const init = async () => {
           let visit = uniquePersonIllnes[PERSON_ID]["VISITS"][VISIT_ID];
 
           VALUE = (VALUE ? VALUE : "").toUpperCase();
-          //use refrential variable
+          //using reference variable
           !visit["Risk_Factor"] &&
             (visit["Risk_Factor"] = {
               Symptoms: 0,
@@ -117,8 +117,6 @@ const init = async () => {
           } else if (VALUE == "R06.01" && !visit["Severe_orthopnea"]) {
             visit["Severe_orthopnea"] = "Yes";
             visit["Risk_Cat"] = "RED";
-            // Not sure need to confirm
-            // visit["Risk_Factor"]["Symptoms"] += 1;
           } else if (VALUE.includes("E10") || VALUE.includes("E11")) {
             if (!visit["Pre_pregnancy_diagnosis_of_diabetes"]) {
               visit["Pre_pregnancy_diagnosis_of_diabetes"] = "Yes";
@@ -130,7 +128,6 @@ const init = async () => {
           ) {
             visit["Pre_pregnancy_diagnosis_of_hypertension"] = "Yes";
             visit["Risk_Factor"]["RiskFactor"] += 1;
-            // visit["D_Date"] = RECORDED_DATE;
           }
           if (visit["Diagnoses_Date"] === undefined) {
             visit["Diagnoses_Date"] = RECORDED_DATE;
@@ -156,7 +153,6 @@ const init = async () => {
 
         EVENT_CD = Number(EVENT_CD);
         EVENT_DESC = (EVENT_DESC ? EVENT_DESC : "").toLowerCase();
-        // RESULT_VAL = Number(RESULT_VAL);
         CLINICAL_CAT = (CLINICAL_CAT ? CLINICAL_CAT : "").toLowerCase();
 
         if (uniquePersonIllnes[PERSON_ID]) {
@@ -173,7 +169,7 @@ const init = async () => {
               RiskFactor: 0,
             });
 
-          //Add Systolic BP details to Person widget.
+          //Checking for different diagnoses in Person widget.
 
           if (
             CLINICAL_CAT.includes("tobacco") ||
@@ -345,20 +341,18 @@ const init = async () => {
           }
         }
       });
+
       //Prepare final result array from uniquePersonIllnes Object.
       for (let PersonID in uniquePersonIllnes) {
-        // console.log(uniquePersonIllnes);
-
         const personDetails = uniquePersonIllnes[PersonID];
-        // console.log(personDetails);
         for (let visitId in personDetails["VISITS"]) {
           const visitDetail = personDetails["VISITS"][visitId];
-          // console.log("key", visitDetail, visitId, PersonID);
           const currentAge =
               (visitIDMap[visitId] || {}).CURRENT_AGE ||
               personDetails.CURRENT_AGE,
             REG_DAYS_FROM_INDEX =
               (visitIDMap[visitId] || {}).REG_DAYS_FROM_INDEX || -1;
+
           const result = {
             PERSON_ID: Number(personDetails.PERSON_ID),
             VISIT_ID: Number(visitId),
@@ -435,12 +429,10 @@ const init = async () => {
             result.Risk_Cat == "RED" ||
             (result.Risk_Factor && result.Risk_Factor != "--")
           ) {
-            // console.log(result);
             preparedResult.push(Object.values(result));
           }
         }
       }
-      // console.log("result", preparedResult);
       return preparedResult;
     };
     const createTable = async () => {
@@ -593,11 +585,11 @@ const init = async () => {
     console.log("Error in query ", err);
   }
 };
-// init();
-
-// Medication();
+init();
 
 // EventandDiagTable();
+
+// Medication();
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

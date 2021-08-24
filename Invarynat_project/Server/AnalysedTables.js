@@ -1,34 +1,5 @@
-// "use strict";
-// const debug = require("debug"),
-//   express = require("express"),
-//   logger = require("morgan"),
-//   cookieParser = require("cookie-parser");
-// /*********************************************** */
-// const app = express();
-
-// const routes = require("./routes/index");
-
-// app.use(logger("dev"));
-// app.use(express.json({ limit: "50mb" }));
-// app.use(express.urlencoded());
-// app.use(cookieParser());
-
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", "*");
-//   res.setHeader(
-//     "Access-Control-Allow-Methods",
-//     "OPTIONS, GET, POST, PUT, PATCH, DELETE"
-//   );
-//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-//   next();
-// });
-
-// app.use("/", routes);
-
 var sql = require("mssql");
 var dbConfig = require("./Database/dbConnection");
-
-// const { DiagnosesPointers } = require("./Constant/indexConstants");
 
 const init = async () => {
   try {
@@ -94,20 +65,16 @@ const init = async () => {
         and EVENT_DESC not like '%post-term%'
         and EVENT_DESC <> '%Other specified pregnancy related conditions%'  order by RECORDED_DATE`
       );
-      // and EVENT_DESC like '%Other specified pregnancy related conditions%'  order by RECORDED_DATE`
 
-      // console.log("result", DiagnosesResult);
       (visitResult.recordset || []).forEach((item) => {
         let { PERSON_ID, VISIT_ID, VISIT_NUMBER, REASON_FOR_VISIT, ZIP_TYPE } =
           item;
-        // console.log(item);
         if (!(visitTabledata[PERSON_ID] || {})[VISIT_ID]) {
           if (!visitTabledata[PERSON_ID]) {
             visitTabledata[PERSON_ID] = {};
           }
           visitTabledata[PERSON_ID][VISIT_ID] = {};
         }
-        // console.log(visitTabledata);
         let visit = uniquePersonIllnes["EventTableData"][PERSON_ID];
         visitTabledata[PERSON_ID][VISIT_ID]["VISIT_NUMBER"] = VISIT_NUMBER;
         visitTabledata[PERSON_ID][VISIT_ID]["ZIP_TYPE"] = ZIP_TYPE;
@@ -125,7 +92,6 @@ const init = async () => {
           DIAG_DATE,
           DIAG_ID,
         } = item;
-        // console.log("itme", item);
         if (uniquePersonIllnes["DiagnosesTableData"][PERSON_ID]) {
           let visit = uniquePersonIllnes["DiagnosesTableData"][PERSON_ID];
 
@@ -137,9 +103,6 @@ const init = async () => {
           visitWiseData["DIAG_DATE"] = DIAG_DATE ? DIAG_DATE : 0;
           visitWiseData["VALUE"] = VALUE;
           visitWiseData["EVENT_DESC"] = EVENT_DESC ? EVENT_DESC : "";
-          // visitWiseData["EVENT_DESC"] = EVENT_DESC ? EVENT_DESC : "";
-          // visitWiseData["EVENT_DESC"] = EVENT_DESC ? EVENT_DESC : "";
-
           visit.push(visitWiseData);
         }
       });
@@ -179,7 +142,6 @@ const init = async () => {
           visitWiseData["RESULT_UNIT"] =
             (RESULT_UNIT ? RESULT_UNIT : "") || "--";
           visitWiseData["ABORMAL_CD"] = (ABORMAL_CD ? ABORMAL_CD : "") || "--";
-          // visitWiseData["RESULT_NBR"] = RESULT_NBR ? RESULT_NBR : 0;
 
           if ((visitTabledata[PERSON_ID] || {})[VISIT_ID]) {
             let { ZIP_TYPE, REASON_FOR_VISIT, VISIT_NUMBER } = (visitTabledata[
@@ -199,13 +161,10 @@ const init = async () => {
         }
       });
 
-      // console.log(uniquePersonIllnes);
       //Prepare final result array from uniquePersonIllnes Object.
       for (let PersonID in uniquePersonIllnes["DiagnosesTableData"]) {
-        // console.log(uniquePersonIllnes);
         const personDetails =
           uniquePersonIllnes["DiagnosesTableData"][PersonID];
-        // console.log(personDetails);
         personDetails.forEach((item) => {
           let result = {
             DIAG_ID: item.DIAG_ID || 0,
@@ -220,23 +179,11 @@ const init = async () => {
         });
       }
       for (let PersonID in uniquePersonIllnes["EventTableData"]) {
-        // console.log(uniquePersonIllnes);
         const personDetails = uniquePersonIllnes["EventTableData"][PersonID];
-        // console.log(personDetails);
         personDetails.forEach((item) => {
-          // let result = {
-          //   DIAG_ID: item.DIAG_ID || 0,
-          //   PERSON_ID: Number(item.PERSON_ID) || 0,
-          //   VISIT_ID: Number(item.VISIT_ID) || 0,
-          //   RECORDED_DATE: item.RECORDED_DATE || 0,
-          //   DIAG_DATE: item.DIAG_DATE || 0,
-          //   VALUE: item.VALUE.toString() || "--",
-          //   EVENT_DESC: item.EVENT_DESC || "--",
-          // };
           preparedResult.EventTableData.push(Object.values(item));
         });
       }
-      // console.log("result", preparedResult);
       return preparedResult;
     };
     const createTable = async () => {
@@ -261,30 +208,25 @@ const init = async () => {
           )
           and
           (Risk_Cat ='Red' or Risk_Factor>1)
-          and (age> 32 or RACE = 'African American' or BMI>=35 or (ETHNICITY not like 'Non-Hispanic' and ETHNICITY like 'Hispanic'))
+          and (age>=40 or RACE = 'African American' or (ETHNICITY not like 'Non-Hispanic' and ETHNICITY like 'Hispanic') or BMI>=35)
           and (History_of_cardiovascular_disease= 'Yes' or Shortness_of_breath_at_rest = 'Yes' or Severe_orthopnea ='Yes'	or Resting_HR>=110
-          or Resting_Systolic_BP>=140 or Oxygen_saturation= '<=94' or Respiratory_rate>=24 or RACE='African American' or 
-          Age>32 or Swelling_in_face_or_hands= 'Yes' or Dyspnea= 'Yes' or Tachypnea= 'Yes'
+          or Resting_Systolic_BP>=140 or Oxygen_saturation= '<=94' or Respiratory_rate>=24 or Swelling_in_face_or_hands= 'Yes' or Dyspnea= 'Yes' or Tachypnea= 'Yes'
           or New_or_worsening_headache= 'Yes' or Asthma_unresponsive= 'Yes' or Palpitations= 'Yes' 
           or Dizziness_or_syncope= 'Yes' or Chest_pain= 'Yes' or Loud_murmur_heart= 'Yes' 
           or Pre_pregnancy_diagnosis_of_diabetes= 'Yes' or Pre_pregnancy_diagnosis_of_hypertension= 'Yes' or History_of_Substance_use= 'Yes' )
 		      order by cast(PERSON_ID as bigint) asc OFFSET ${offset}  ROWS
           FETCH NEXT ${interval} ROWS ONLY`
-          // order by cast(PERSON_ID as bigint) asc OFFSET 0  ROWS
-          // FETCH NEXT 5 ROWS ONLY
         );
         offset += interval;
 
         let records = personIDs.recordset;
-        // console.log("record", records);
+
         for (let i = 0; i < records.length; i++) {
           let recordSlice = records[i];
-          // console.log(recordSlice);
+
           let values = await createTableFromPersonID(recordSlice);
 
-          // console.log("values", values);
           let createDiagnosesTable = (data) => {
-            // console.log(data);
             const table = new sql.Table("AnalysedDiagnosesTable");
             table.create = true;
             table.columns.add("DIAG_ID", sql.BigInt, { nullable: true });
@@ -305,7 +247,6 @@ const init = async () => {
 
             data.length &&
               data.forEach((value) => {
-                // console.log(value);
                 table.rows.add(...value);
               });
 
@@ -363,9 +304,7 @@ const init = async () => {
             table.columns.add("REASON_FOR_VISIT", sql.VarChar(sql.MAX), {
               nullable: true,
             });
-            // table.columns.add("RESULT_NBR", sql.VarChar(sql.MAX), {
-            //   nullable: true,
-            // });
+
             data.length &&
               data.forEach((value) => {
                 // console.log(value);
@@ -385,7 +324,6 @@ const init = async () => {
           };
           createDiagnosesTable(values.DiagnosesTableData);
           createEventTable(values.EventTableData);
-          // createMedicationAdminTable(values.MedicationAdminTableData);
         }
       }
     };
@@ -396,21 +334,6 @@ const init = async () => {
   }
 };
 // init();
-
-// catch 404 and forward to error handler
-// app.use(function (req, res, next) {
-//   var err = new Error("Not Found");
-//   err.status = 404;
-//   res.json();
-// });
-
-// error handlers
-
-// app.set("port", process.env.PORT || 7000);
-// const server = app.listen(app.get("port"), "localhost", function () {
-//   console.log(" server started with details ", server.address());
-//   debug("Express server listening on port " + server.address().port);
-// });
 
 module.exports = {
   EventandDiagTable: init,
